@@ -214,7 +214,7 @@ public class PetriGraph extends mxGraph{
 		Element arc = xmlDocument.createElement("Arc");
 		arc.setAttribute("weight", "1");
 
-		return super.createEdge(parent, id, arc, source, target, "ARC");
+		return super.createEdge(parent, id, arc, source, target, "");
 	}
 	
 	public void checkActiveTransitions() {

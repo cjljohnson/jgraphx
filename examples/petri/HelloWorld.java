@@ -58,7 +58,7 @@ public class HelloWorld extends JFrame
 
 	public HelloWorld()
 	{
-		super("Hello, World!");
+		super("Petri Netter");
 		
 		//Hardcode test elements
 		Document xmlDocument = mxDomUtils.createDocument();
@@ -123,6 +123,7 @@ public class HelloWorld extends JFrame
 		arcStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
 		arcStyle.put(mxConstants.STYLE_FILLCOLOR, "#FFFFFF");
 		arcStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
+		arcStyle.put(mxConstants.STYLE_STROKEWIDTH, 2);
 		stylesheet.putCellStyle("ARC", arcStyle);
 		
 		applyEdgeDefaults(graph);
@@ -176,6 +177,11 @@ public class HelloWorld extends JFrame
 		// Sets the background to white
 		graphComponent.getViewport().setOpaque(true);
 		graphComponent.getViewport().setBackground(Color.WHITE);
+		graphComponent.setBackground(Color.WHITE);
+		graphComponent.setEnterStopsCellEditing(true);
+		
+		//final mxGraph graph2 = new PetriGraph(xmlDocument);
+		//graphComponent.setGraph(graph2);
 		
 		graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
 		{
@@ -315,9 +321,10 @@ public class HelloWorld extends JFrame
 	    edge.put(mxConstants.STYLE_ORTHOGONAL, false);
 	    edge.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_CONNECTOR);
 	    edge.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC);
-	    edge.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_MIDDLE);
-	    edge.put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_CENTER);
+	    edge.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_BOTTOM);
+	    edge.put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_LEFT);
 	    edge.put(mxConstants.STYLE_STROKECOLOR, "#000000");
+	    edge.put(mxConstants.STYLE_STROKEWIDTH, 2);
 	    edge.put(mxConstants.STYLE_FONTCOLOR, "#000000");
 
 	    graph.getStylesheet().setDefaultEdgeStyle(edge);
