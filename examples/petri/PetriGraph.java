@@ -119,72 +119,25 @@ public class PetriGraph extends mxGraph{
 		super.cellLabelChanged(cell, newValue, autoSize);
 	}
 	
-	public void fireTransition(Object obj)
+	public boolean fireTransition(Object obj)
 	{
 		if (!(obj instanceof mxCell))
 		{
-			return;
+			return false;
 		}
 		mxCell t = (mxCell) obj;
-		System.out.println(t.getEdgeCount());
+		if (!isFirable(obj)) return false;
 		Object[] edges = getAllEdges(new Object[] {obj});
-		
-		// Check if valid
-		for (Object o : edges) 
-		{
-			mxCell edge = (mxCell)o;
-			System.out.println(o);
-			if (t.equals(edge.getSource()))
-			{
-				System.out.println("Is source");
-				mxCell out = (mxCell)edge.getTarget();
-				Element value = ((Element)out.getValue());
-				int tokens = Integer.parseInt(value.getAttribute("tokens"));
-				int capacity = Integer.parseInt(value.getAttribute("capacity"));
-				if (capacity == -1) continue;
-				System.out.println("yee");
-				int arcWeight = 1;
-				Object edgeValue = edge.getValue();
-				if (edgeValue instanceof Element)
-				{
-					if (((Element)edgeValue).getAttribute("weight").length() > 0)
-					{
-						arcWeight = Integer.parseInt(((Element)edgeValue).getAttribute("weight"));
-					}
-				}
-				if (capacity < arcWeight + tokens) return;
-			} else
-			{
-				System.out.println("Is destination");
-				mxCell in = (mxCell)edge.getSource();
-				Element value = ((Element)in.getValue());
-				int tokens = Integer.parseInt(value.getAttribute("tokens"));
-				System.out.println("yee");
-				int arcWeight = 1;
-				Object edgeValue = edge.getValue();
-				if (edgeValue instanceof Element)
-				{
-					if (((Element)edgeValue).getAttribute("weight").length() > 0)
-					{
-						arcWeight = Integer.parseInt(((Element)edgeValue).getAttribute("weight"));
-					}
-				}
-				if (tokens - arcWeight < 0) return;
-			}
-		}
 		
 		// Fire Transition
 		for (Object o : edges) 
 		{
 			mxCell edge = (mxCell)o;
-			System.out.println(o);
 			if (t.equals(edge.getSource()))
 			{
-				System.out.println("Is source");
 				mxCell out = (mxCell)edge.getTarget();
 				Element value = ((Element)out.getValue());
 				int tokens = Integer.parseInt(value.getAttribute("tokens"));
-				System.out.println("yee");
 				int arcWeight = 1;
 				Object edgeValue = edge.getValue();
 				if (edgeValue instanceof Element)
@@ -197,11 +150,9 @@ public class PetriGraph extends mxGraph{
 				value.setAttribute("tokens", "" + (tokens +arcWeight));
 			} else
 			{
-				System.out.println("Is destination");
 				mxCell in = (mxCell)edge.getSource();
 				Element value = ((Element)in.getValue());
 				int tokens = Integer.parseInt(value.getAttribute("tokens"));
-				System.out.println("yee");
 				int arcWeight = 1;
 				Object edgeValue = edge.getValue();
 				if (edgeValue instanceof Element)
@@ -214,34 +165,47 @@ public class PetriGraph extends mxGraph{
 				value.setAttribute("tokens", "" + (tokens - arcWeight));
 			}
 		}
+		return true;
 	}
 	
-	public void addPlace(int tokens, int capacity) {
+	public Object addPlace(int tokens, int capacity) {
+        return addPlace(tokens, capacity, 0, 0);
+    }
+	
+	public Object addPlace(int tokens, int capacity, int x, int y) {
+	    Object cell;
 		try {
 			getModel().beginUpdate();
 		
 		Element place1 = xmlDocument.createElement("Place");
 		place1.setAttribute("tokens", "" + tokens);
 		place1.setAttribute("capacity", "" + capacity);
-		insertVertex(getDefaultParent(), null, place1, 0, 0,
+		cell = insertVertex(getDefaultParent(), null, place1, x, y,
 				40, 40, "PLACE");
 		} finally
 		{
 			getModel().endUpdate();
 		}
+		return cell;
 	}
 	
-	public void addTransition() {
+	public Object addTransition() {
+        return addTransition(0, 0);
+    }
+	
+	public Object addTransition(int x, int y) {
+	    Object cell;
 		try {
 			getModel().beginUpdate();
 		
 		Element transition1 = xmlDocument.createElement("Transition");
-		insertVertex(getDefaultParent(), null, transition1, 0, 0,
+		cell = insertVertex(getDefaultParent(), null, transition1, x, y,
 				40, 40, "TRANSITION");
 		} finally
 		{
 			getModel().endUpdate();
 		}
+		return cell;
 	}
 	
 	public Object createEdge(Object parent, String id, Object value,
@@ -252,5 +216,111 @@ public class PetriGraph extends mxGraph{
 
 		return super.createEdge(parent, id, arc, source, target, "ARC");
 	}
+	
+	public void checkActiveTransitions() {
+	    Object[] cells = getChildVertices(getDefaultParent());
+	    
+	    for (Object o : cells) {
+	        checkActiveTransition(o);
+	    }
+	    
+	}
+	
+	public void checkActiveTransition(Object o) {
+	    if (o instanceof mxCell) {
+            Object value = ((mxCell) o).getValue();
+
+            if (value instanceof Element)
+            {
+                Element elt = (Element) value;
+
+                if (elt.getTagName().equalsIgnoreCase("transition"))
+                {
+                    if (isFirable(o)) {
+                        setCellStyle("TRANSITION;ACTIVETRANSITION", new Object[] {o});
+                    } else {
+                        setCellStyle("TRANSITION", new Object[] {o});
+                    }
+                }
+
+            }
+        }
+	}
+	
+	public boolean isFirable(Object obj) {
+	    
+	    mxCell t;
+	    
+	    if (obj instanceof mxCell) {
+	        t = (mxCell) obj;
+	        Object value = ((mxCell) obj).getValue();
+
+            if (value instanceof Element)
+            {
+                Element elt = (Element) value;
+
+                if (elt.getTagName().equalsIgnoreCase("transition"))
+                {
+                    
+                } else {
+                    return false;
+                }
+
+            } else {
+                return false;
+            }
+	    } else {
+	        return false;
+	    }
+	    
+	    Object[] edges = getAllEdges(new Object[] {obj});
+	    // Can't fire if not connected
+	    if (edges.length == 0) return false;
+        
+        // Check if valid
+        for (Object o : edges) 
+        {
+            mxCell edge = (mxCell)o;
+            if (t.equals(edge.getSource()))
+            {
+                mxCell out = (mxCell)edge.getTarget();
+                Element value = ((Element)out.getValue());
+                int tokens = Integer.parseInt(value.getAttribute("tokens"));
+                int capacity = Integer.parseInt(value.getAttribute("capacity"));
+                if (capacity == -1) continue;
+                int arcWeight = 1;
+                Object edgeValue = edge.getValue();
+                if (edgeValue instanceof Element)
+                {
+                    if (((Element)edgeValue).getAttribute("weight").length() > 0)
+                    {
+                        arcWeight = Integer.parseInt(((Element)edgeValue).getAttribute("weight"));
+                    }
+                }
+                if (capacity < arcWeight + tokens) return false;
+            } else
+            {
+                mxCell in = (mxCell)edge.getSource();
+                Element value = ((Element)in.getValue());
+                int tokens = Integer.parseInt(value.getAttribute("tokens"));
+                int arcWeight = 1;
+                Object edgeValue = edge.getValue();
+                if (edgeValue instanceof Element)
+                {
+                    if (((Element)edgeValue).getAttribute("weight").length() > 0)
+                    {
+                        arcWeight = Integer.parseInt(((Element)edgeValue).getAttribute("weight"));
+                    }
+                }
+                if (tokens - arcWeight < 0) return false;
+            }
+        }
+        
+        return true;
+	    
+	}
+	
+	
+	
 
 }

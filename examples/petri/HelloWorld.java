@@ -27,6 +27,10 @@ import com.mxgraph.swing.handler.mxKeyboardHandler;
 import com.mxgraph.swing.handler.mxRubberband;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxDomUtils;
+import com.mxgraph.util.mxEvent;
+import com.mxgraph.util.mxEventObject;
+import com.mxgraph.util.mxResources;
+import com.mxgraph.util.mxEventSource.mxIEventListener;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxMultiplicity;
 import com.mxgraph.view.mxStylesheet;
@@ -39,6 +43,18 @@ public class HelloWorld extends JFrame
 	 * 
 	 */
 	private static final long serialVersionUID = -2707712944901661771L;
+	
+	static
+    {
+        try
+        {
+            mxResources.add("com/mxgraph/examples/swing/resources/editor");
+        }
+        catch (Exception e)
+        {
+            // ignore
+        }
+    }
 
 	public HelloWorld()
 	{
@@ -54,11 +70,12 @@ public class HelloWorld extends JFrame
 		Element place2 = xmlDocument.createElement("Place");
 		place2.setAttribute("tokens", "3");
 		place2.setAttribute("capacity", "20");
+		xmlDocument.appendChild(place1);
+		place1.appendChild(place2);
 		
 		// Transitions
 		Element transition1 = xmlDocument.createElement("Transition");
 		Element transition2 = xmlDocument.createElement("Transition");
-		System.out.println(place1.getTagName());
 		
 		// Arcs
 		Element arc1 = xmlDocument.createElement("Arc");
@@ -96,6 +113,11 @@ public class HelloWorld extends JFrame
 		transitionStyle.put(mxConstants.STYLE_NOLABEL, true);
 		stylesheet.putCellStyle("TRANSITION", transitionStyle);
 		
+
+        Hashtable<String, Object> activeTransitionStyle = new Hashtable<String, Object>();
+        activeTransitionStyle.put(mxConstants.STYLE_STROKECOLOR, "#FF0000");
+        stylesheet.putCellStyle("ACTIVETRANSITION", activeTransitionStyle);
+		
 		Hashtable<String, Object> arcStyle = new Hashtable<String, Object>();
 		arcStyle.put(mxConstants.STYLE_OPACITY, 100);
 		arcStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
@@ -108,15 +130,10 @@ public class HelloWorld extends JFrame
 		
 		try
 		{
-			mxCell v1 = (mxCell)graph.insertVertex(parent, null, place1, 20, 20, 40,
-					40, "PLACE");
-					System.out.println(v1);
-			Object v2 = graph.insertVertex(parent, null, transition1, 240, 150,
-					40, 40, "TRANSITION");
-			Object v3 = graph.insertVertex(parent, null, transition2, 140, 150,
-					40, 40, "TRANSITION");
-			Object v4 = (mxCell)graph.insertVertex(parent, null, place2, 280, 280, 40,
-					40, "PLACE");
+			Object v1 = graph.addPlace(5, 10, 20, 20);
+			Object v2 = graph.addTransition(240, 150);
+			Object v3 = graph.addTransition(140, 150);
+			Object v4 = graph.addPlace(3, 20, 280, 280);
 			graph.insertEdge(parent, null, arc1, v1, v2, null);
 			graph.insertEdge(parent, null, arc2, v3, v1, null);
 			graph.insertEdge(parent, null, arc3, v2, v4, null);
@@ -124,14 +141,13 @@ public class HelloWorld extends JFrame
 			graph.setCellsResizable(false);
 			graph.setMultigraph(false);
 			graph.setAllowDanglingEdges(false);
+			graph.checkActiveTransitions();
 		}
 		finally
 		{
 			graph.getModel().endUpdate();
 		}
 		
-		graph.addPlace(3, 20);
-		graph.addTransition();
 		
 		// Set bipartite restrictions
 		mxMultiplicity[] multiplicities = new mxMultiplicity[2];
@@ -175,17 +191,19 @@ public class HelloWorld extends JFrame
 					{
 						if (((Element) value).getTagName().equalsIgnoreCase("transition"))
 						{
-							((PetriGraph) graph).fireTransition(obj);
-							graphComponent.refresh();
+							if (graph.fireTransition(obj)) {
+							    graph.checkActiveTransitions();
+							    graphComponent.refresh();
+							}
 						}
 					}
-					System.out.println("cell="+graph.getLabel(obj));
 				}
 			}
 		});
 		
 		// Installs the popup menu in the graph component
-				graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
+		
+		graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
 				{
 
 					/**
@@ -214,17 +232,63 @@ public class HelloWorld extends JFrame
 		
 		new mxRubberband(graphComponent);
 		new mxKeyboardHandler(graphComponent);
+		
+		
+		graph.addListener(mxEvent.CELL_CONNECTED, new mxIEventListener() {
+            public void invoke(Object sender, mxEventObject evt) {
+                mxCell connectionCell = (mxCell) evt.getProperty("edge");
+                if (connectionCell.getSource() != null && connectionCell.getTarget() != null) {
+                    graph.checkActiveTransition(connectionCell.getSource());
+                    graph.checkActiveTransition(connectionCell.getTarget());
+                }
+                
+            }
+        });
+		
+		graph.addListener(mxEvent.CELLS_REMOVED, new mxIEventListener() {
+            public void invoke(Object sender, mxEventObject evt) {
+                Object[] cells = (Object[]) evt.getProperty("cells");
+                for (Object cell : cells) {
+                    mxCell c = (mxCell) cell;
+                    if (c.getSource() != null) {
+                        if (((Element) c.getSource().getValue())
+                                .getTagName().equalsIgnoreCase("transition")) {
+                            graph.checkActiveTransition(c.getSource());
+                        }
+                    }
+                    if (c.getTarget() != null) {
+                        if (((Element) c.getTarget().getValue())
+                                .getTagName().equalsIgnoreCase("transition")) {
+                            graph.checkActiveTransition(c.getTarget());
+                        }
+                    }
+                }
+                
+            }
+        });
 	}
 	
 	protected void showGraphPopupMenu(MouseEvent e)
 	{
 		Point pt = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(),
 				graphComponent);
-		RightClickMenu menu = new RightClickMenu(this);
+		RightClickMenu menu = new RightClickMenu(this, pt.x, pt.y);
 		menu.show(graphComponent, pt.x, pt.y);
 
 		e.consume();
 	}
+	
+	/**
+     * 
+     * @param name
+     * @param action
+     * @return a new Action bound to the specified string name
+     */
+    public Action bind(String name, final Action action)
+    {
+        return bind(name, action, null);
+    }
+
 	
 	@SuppressWarnings("serial")
 	public Action bind(String name, final Action action, String iconUrl)
@@ -258,6 +322,8 @@ public class HelloWorld extends JFrame
 
 	    graph.getStylesheet().setDefaultEdgeStyle(edge);
 	}
+	
+	
 
 	public static void main(String[] args)
 	{
