@@ -142,7 +142,7 @@ public class HelloWorld extends JFrame
 			graph.setCellsResizable(false);
 			graph.setMultigraph(false);
 			graph.setAllowDanglingEdges(false);
-			graph.checkActiveTransitions();
+			graph.checkEnabledTransitions();
 		}
 		finally
 		{
@@ -198,7 +198,7 @@ public class HelloWorld extends JFrame
 						if (((Element) value).getTagName().equalsIgnoreCase("transition"))
 						{
 							if (graph.fireTransition(obj)) {
-							    graph.checkActiveTransitions();
+							    graph.checkEnabledFromTransition(obj);
 							    graphComponent.refresh();
 							}
 						}
@@ -233,7 +233,6 @@ public class HelloWorld extends JFrame
 					}
 
 				});
-
 		
 		
 		new mxRubberband(graphComponent);
@@ -244,8 +243,7 @@ public class HelloWorld extends JFrame
             public void invoke(Object sender, mxEventObject evt) {
                 mxCell connectionCell = (mxCell) evt.getProperty("edge");
                 if (connectionCell.getSource() != null && connectionCell.getTarget() != null) {
-                    graph.checkActiveTransition(connectionCell.getSource());
-                    graph.checkActiveTransition(connectionCell.getTarget());
+                    graph.checkEnabledFromEdge(connectionCell);
                 }
                 
             }
@@ -255,21 +253,8 @@ public class HelloWorld extends JFrame
             public void invoke(Object sender, mxEventObject evt) {
                 Object[] cells = (Object[]) evt.getProperty("cells");
                 for (Object cell : cells) {
-                    mxCell c = (mxCell) cell;
-                    if (c.getSource() != null) {
-                        if (((Element) c.getSource().getValue())
-                                .getTagName().equalsIgnoreCase("transition")) {
-                            graph.checkActiveTransition(c.getSource());
-                        }
-                    }
-                    if (c.getTarget() != null) {
-                        if (((Element) c.getTarget().getValue())
-                                .getTagName().equalsIgnoreCase("transition")) {
-                            graph.checkActiveTransition(c.getTarget());
-                        }
-                    }
+                	graph.checkEnabledFromEdge(cell);
                 }
-                
             }
         });
 	}
