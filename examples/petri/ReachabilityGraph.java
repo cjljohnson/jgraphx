@@ -90,6 +90,7 @@ public class ReachabilityGraph extends mxGraph{
 				}
 			}
 		}
+		setCellStyle("NODE;COMPLETE", new Object[] {node1});
 	}
 	
 	private void initStyles() {
@@ -99,9 +100,25 @@ public class ReachabilityGraph extends mxGraph{
 		nodeStyle.put(mxConstants.STYLE_OPACITY, 100);
 		nodeStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
 		nodeStyle.put(mxConstants.STYLE_FILLCOLOR, "#FFFFFF");
-		nodeStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
+		nodeStyle.put(mxConstants.STYLE_STROKECOLOR, "#FF0000");
 		nodeStyle.put(mxConstants.STYLE_STROKEWIDTH, 2);
 		//nodeStyle.put(mxConstants.STYLE_NOLABEL, true);
 		stylesheet.putCellStyle("NODE", nodeStyle);
+		
+		Hashtable<String, Object> completeStyle = new Hashtable<String, Object>();
+		completeStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
+		stylesheet.putCellStyle("COMPLETE", completeStyle);
+		
+		Map<String, Object> edge = new HashMap<String, Object>();
+	    edge.put(mxConstants.STYLE_ROUNDED, true);
+	    edge.put(mxConstants.STYLE_ORTHOGONAL, false);
+	    edge.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_CONNECTOR);
+	    edge.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC);
+	    edge.put(mxConstants.STYLE_VERTICAL_ALIGN, mxConstants.ALIGN_BOTTOM);
+	    edge.put(mxConstants.STYLE_ALIGN, mxConstants.ALIGN_LEFT);
+	    edge.put(mxConstants.STYLE_STROKECOLOR, "#000000");
+	    edge.put(mxConstants.STYLE_STROKEWIDTH, 2);
+	    edge.put(mxConstants.STYLE_FONTCOLOR, "#000000");
+		getStylesheet().setDefaultEdgeStyle(edge);
 	}
 }

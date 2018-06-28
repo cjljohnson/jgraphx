@@ -260,7 +260,10 @@ public class HelloWorld extends JFrame
 		long end = System.currentTimeMillis();
 		System.out.println(end - start);
 		JFrame frame2 = new JFrame("WOW");
-		frame2.setContentPane(new mxGraphComponent(reach));
+		mxGraphComponent reachComponent = new mxGraphComponent(reach);
+		frame2.setContentPane(reachComponent);
+		
+		reachComponent.setConnectable(false);
 		frame2.setSize(400, 400);
 		frame2.setVisible(true);
 	}
