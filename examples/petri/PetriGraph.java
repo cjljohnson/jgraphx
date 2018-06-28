@@ -3,13 +3,17 @@ package petri;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.mxgraph.model.mxCell;
+import com.mxgraph.model.mxGeometry;
+import com.mxgraph.model.mxGraphModel;
 import com.mxgraph.view.mxGraph;
 
 public class PetriGraph extends mxGraph{
@@ -44,6 +48,33 @@ public class PetriGraph extends mxGraph{
 	}
 	
 	@Override
+	public boolean isCellSelectable(Object cell) {
+		if (cell instanceof mxCell)
+		{
+			Object value = ((mxCell) cell).getValue();
+
+			if (value instanceof Element)
+			{
+				Element elt = (Element) value;
+
+				if (elt.getTagName().equalsIgnoreCase("place"))
+				{
+					if (getCellGeometry(cell).isRelative())
+						return false;
+				}
+				
+				//if (getModel().isEdge(cell)) return true;
+			}
+		}
+		return super.isCellSelectable(cell);
+	}
+	
+	public boolean isCellFoldable(Object cell, boolean collapse)
+	{
+		return false;
+	}
+	
+	@Override
 	public String convertValueToString(Object cell)
 	{
 		if (cell instanceof mxCell)
@@ -56,9 +87,14 @@ public class PetriGraph extends mxGraph{
 
 				if (elt.getTagName().equalsIgnoreCase("place"))
 				{
+					if (getCellGeometry(cell).isRelative()) { // Capacity label
+						String capacity = elt.getAttribute("capacity");
+						return capacity;
+					} else {
 					String tokens = elt.getAttribute("tokens");
 
 					return tokens;
+					}
 				}
 				else if (elt.getTagName().equalsIgnoreCase("arc"))
 				{
@@ -86,17 +122,26 @@ public class PetriGraph extends mxGraph{
 
 				if (elt.getTagName().equalsIgnoreCase("place"))
 				{
+
 					try {
-						int tokens = Integer.parseInt(label);
-						if (tokens < 0) return;
+						int val = Integer.parseInt(label);
+						if (!getCellGeometry(cell).isRelative()) { // Capacity label
+							if (val < 0) return;
+						} else {
+							if (val < -1) return;
+						}
 					} catch (Exception e) {
 						return;
 					}
 
 					// Clones the value for correct undo/redo
-					elt = (Element) elt.cloneNode(true);
-
-					elt.setAttribute("tokens", label);
+					//elt = (Element) elt.cloneNode(true);
+					
+					if (!getCellGeometry(cell).isRelative()) { // Capacity label
+						elt.setAttribute("tokens", label);
+					} else {
+						elt.setAttribute("capacity", label);	
+					}
 
 					newValue = elt;
 										
@@ -136,7 +181,13 @@ public class PetriGraph extends mxGraph{
 
 				if (elt.getTagName().equalsIgnoreCase("place"))
 				{
-					checkEnabledFromPlace(cell);
+					if (!getCellGeometry(cell).isRelative()) { // Capacity label
+						checkEnabledFromPlace(cell);
+						
+					} else {
+						checkEnabledFromPlace(((mxCell)cell).getParent());
+					}
+					
 				} else if (elt.getTagName().equalsIgnoreCase("arc"))
 				{
 					checkEnabledFromEdge(cell);
@@ -203,11 +254,18 @@ public class PetriGraph extends mxGraph{
 		try {
 			getModel().beginUpdate();
 		
-		Element place1 = xmlDocument.createElement("Place");
-		place1.setAttribute("tokens", "" + tokens);
-		place1.setAttribute("capacity", "" + capacity);
-		cell = insertVertex(getDefaultParent(), null, place1, x, y,
+			Element place1 = xmlDocument.createElement("Place");
+			place1.setAttribute("tokens", "" + tokens);
+			place1.setAttribute("capacity", "" + capacity);
+			cell = insertVertex(getDefaultParent(), null, place1, x, y,
 				40, 40, "PLACE");
+			mxGeometry geo1 = new mxGeometry(0, 1, 40,
+					20);
+			geo1.setRelative(true);
+			mxCell capLabel = new mxCell(place1, geo1,
+					"CAPACITY");
+			capLabel.setVertex(true);
+			addCell(capLabel, cell);
 		} finally
 		{
 			getModel().endUpdate();
@@ -237,10 +295,13 @@ public class PetriGraph extends mxGraph{
 	public Object createEdge(Object parent, String id, Object value,
 			Object source, Object target, String style)
 	{
-		Element arc = xmlDocument.createElement("Arc");
-		arc.setAttribute("weight", "1");
+		if (value==null) {
+			Element arc = xmlDocument.createElement("Arc");
+			arc.setAttribute("weight", "1");
+			value = arc;
+		}
 
-		return super.createEdge(parent, id, arc, source, target, "");
+		return super.createEdge(parent, id, value, source, target, "");
 	}
 	
 	public void checkEnabledTransitions() {
@@ -505,6 +566,41 @@ public class PetriGraph extends mxGraph{
 			}
 		}
 		return null;
+	}
+	
+	public Map<String, Integer> getPlaceTokens() {
+		mxGraphModel model = (mxGraphModel) getModel();
+		Map<String, Object> cells = model.getCells();
+		Map<String, Integer> tokenMap = new TreeMap<String, Integer>();
+		for (String id : cells.keySet()) {
+			mxCell cell = (mxCell)cells.get(id);
+			Object value = cell.getValue();
+			if (value instanceof Element) {
+				Element el = (Element)value;
+				if (el.getTagName().equalsIgnoreCase("place") && !getCellGeometry(cell).isRelative()) {
+					int tokens = Integer.parseInt(el.getAttribute("tokens"));
+					tokenMap.put(id, tokens);
+				}
+			}
+		}
+		System.out.println(tokenMap.toString());
+		return tokenMap;
+	}
+	
+	public void setPlaceTokens(Map<String, Integer> tokenMap) {
+		mxGraphModel model = (mxGraphModel) getModel();
+		for (String id : tokenMap.keySet()) {
+			mxCell cell = (mxCell)model.getCell(id);
+			if (cell != null) {
+				Object value = cell.getValue();
+				if (value instanceof Element) {
+					Element el = (Element)value;
+					if (el.getTagName().equalsIgnoreCase("place")) {
+						el.setAttribute("tokens", "" + tokenMap.get(id));
+					}
+				}
+			}
+		}
 	}
 	
 

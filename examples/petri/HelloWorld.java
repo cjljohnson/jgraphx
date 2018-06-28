@@ -9,11 +9,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import org.w3c.dom.Document;
@@ -22,9 +24,12 @@ import org.w3c.dom.Element;
 import com.mxgraph.examples.swing.editor.BasicGraphEditor;
 import com.mxgraph.examples.swing.editor.EditorPopupMenu;
 import com.mxgraph.model.mxCell;
+import com.mxgraph.model.mxGraphModel;
+import com.mxgraph.model.mxIGraphModel;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.swing.handler.mxKeyboardHandler;
 import com.mxgraph.swing.handler.mxRubberband;
+import com.mxgraph.swing.util.mxSwingConstants;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxDomUtils;
 import com.mxgraph.util.mxEvent;
@@ -82,13 +87,29 @@ public class HelloWorld extends JFrame
 		Element arc2 = xmlDocument.createElement("Arc");
 		Element arc3 = xmlDocument.createElement("Arc");
 		Element arc4 = xmlDocument.createElement("Arc");
-		arc1.setAttribute("weight", "1");
+		arc1.setAttribute("weight", "3");
 		arc2.setAttribute("weight", "2");
 		arc3.setAttribute("weight", "2");
 		arc4.setAttribute("weight", "4");
+		
+		System.out.println(arc4.getAttribute("weight"));
+		
 
 		final PetriGraph graph = new PetriGraph(xmlDocument);
 		Object parent = graph.getDefaultParent();
+		
+//		mxSwingConstants.SHADOW_COLOR = null;
+//		mxSwingConstants.DEFAULT_VALID_COLOR = null;
+//		mxSwingConstants.DEFAULT_INVALID_COLOR = null;
+//		mxSwingConstants.RUBBERBAND_BORDERCOLOR = null;
+//		mxSwingConstants.RUBBERBAND_FILLCOLOR = null;
+//		mxSwingConstants.HANDLE_BORDERCOLOR = null;
+//		mxSwingConstants.HANDLE_FILLCOLOR = null;
+//		mxSwingConstants.LABEL_HANDLE_FILLCOLOR = null;
+//		mxSwingConstants.LOCKED_HANDLE_FILLCOLOR = null;
+//		mxSwingConstants.CONNECT_HANDLE_FILLCOLOR = null;
+//		mxSwingConstants.EDGE_SELECTION_COLOR = null;
+//		mxSwingConstants.VERTEX_SELECTION_COLOR = null;
 
 		graph.getModel().beginUpdate();
 		
@@ -102,6 +123,12 @@ public class HelloWorld extends JFrame
 		placeStyle.put(mxConstants.STYLE_STROKEWIDTH, 5);
 		placeStyle.put(mxConstants.STYLE_NOLABEL, false);
 		stylesheet.putCellStyle("PLACE", placeStyle);
+		
+		Hashtable<String, Object> placeCapacityStyle = new Hashtable<String, Object>();
+		placeCapacityStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
+		placeCapacityStyle.put(mxConstants.STYLE_FILLCOLOR, "none");
+		placeCapacityStyle.put(mxConstants.STYLE_STROKECOLOR, "none");
+		stylesheet.putCellStyle("CAPACITY", placeCapacityStyle);
 		
 		Hashtable<String, Object> transitionStyle = new Hashtable<String, Object>();
 		transitionStyle.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_RECTANGLE);
@@ -129,16 +156,23 @@ public class HelloWorld extends JFrame
 		applyEdgeDefaults(graph);
 		
 		
+		
+		
 		try
 		{
 			Object v1 = graph.addPlace(5, 10, 20, 20);
 			Object v2 = graph.addTransition(240, 150);
 			Object v3 = graph.addTransition(140, 150);
+			Object t3 = graph.addTransition(60, 200);
 			Object v4 = graph.addPlace(3, 20, 280, 280);
 			graph.insertEdge(parent, null, arc1, v1, v2, null);
 			graph.insertEdge(parent, null, arc2, v3, v1, null);
 			graph.insertEdge(parent, null, arc3, v2, v4, null);
 			graph.insertEdge(parent, null, arc4, v4, v3, null);
+			
+			graph.insertEdge(parent, null, arc4, v4, t3, null);
+			graph.insertEdge(parent, null, arc4, t3, v1, null);
+			
 			graph.setCellsResizable(false);
 			graph.setMultigraph(false);
 			graph.setAllowDanglingEdges(false);
@@ -170,73 +204,12 @@ public class HelloWorld extends JFrame
 		
 		
 		
-
+		JPanel panel = new JPanel();
+		getContentPane().add(panel);
+		
 		graphComponent = new mxGraphComponent(graph);
-		getContentPane().add(graphComponent);
-		graphComponent.setGridVisible(true);
-		// Sets the background to white
-		graphComponent.getViewport().setOpaque(true);
-		graphComponent.getViewport().setBackground(Color.WHITE);
-		graphComponent.setBackground(Color.WHITE);
-		graphComponent.setEnterStopsCellEditing(true);
-		
-		//final mxGraph graph2 = new PetriGraph(xmlDocument);
-		//graphComponent.setGraph(graph2);
-		
-		graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
-		{
-		
-			public void mouseReleased(MouseEvent e)
-			{
-				Object obj = graphComponent.getCellAt(e.getX(), e.getY());
-				
-				if (obj != null && obj instanceof mxCell)
-				{
-					Object value = ((mxCell) obj).getValue();
-					if (value instanceof Element)
-					{
-						if (((Element) value).getTagName().equalsIgnoreCase("transition"))
-						{
-							if (graph.fireTransition(obj)) {
-							    graph.checkEnabledFromTransition(obj);
-							    graphComponent.refresh();
-							}
-						}
-					}
-				}
-			}
-		});
-		
-		// Installs the popup menu in the graph component
-		
-		graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
-				{
-
-					/**
-					 * 
-					 */
-					public void mousePressed(MouseEvent e)
-					{
-						// Handles context menu on the Mac where the trigger is on mousepressed
-						mouseReleased(e);
-					}
-
-					/**
-					 * 
-					 */
-					public void mouseReleased(MouseEvent e)
-					{
-						if (e.isPopupTrigger())
-						{
-							showGraphPopupMenu(e);
-						}
-					}
-
-				});
-		
-		
-		new mxRubberband(graphComponent);
-		new mxKeyboardHandler(graphComponent);
+		panel.add(graphComponent);
+		initialiseGraphComponent(graphComponent);
 		
 		
 		graph.addListener(mxEvent.CELL_CONNECTED, new mxIEventListener() {
@@ -257,6 +230,109 @@ public class HelloWorld extends JFrame
                 }
             }
         });
+		
+		
+		PetriGraph graph2 = new PetriGraph(xmlDocument);
+		graph2.addCells(graph.cloneCells(graph.getChildCells(graph.getDefaultParent())));
+		mxStylesheet stylesheet2 = graph2.getStylesheet();
+		stylesheet2.putCellStyle("PLACE", placeStyle);
+		stylesheet2.putCellStyle("TRANSITION", transitionStyle);
+		stylesheet2.putCellStyle("ACTIVETRANSITION", activeTransitionStyle);
+		stylesheet2.putCellStyle("ARC", arcStyle);
+		
+		
+		mxGraphComponent graphComponent2 = new mxGraphComponent(graph2);
+		initialiseGraphComponent(graphComponent2);
+		graphComponent2.refresh();
+		panel.add(graphComponent2);
+		
+		
+		Map<String, Integer> tokenMap = graph.getPlaceTokens();
+		tokenMap.put("6", 10);
+		graph.setPlaceTokens(tokenMap);
+		graphComponent.refresh();
+		
+		pack();
+		
+		
+		long start = System.currentTimeMillis();
+		ReachabilityGraph reach = new ReachabilityGraph(graph, 20);
+		long end = System.currentTimeMillis();
+		System.out.println(end - start);
+		JFrame frame2 = new JFrame("WOW");
+		frame2.setContentPane(new mxGraphComponent(reach));
+		frame2.setSize(400, 400);
+		frame2.setVisible(true);
+	}
+	
+	public void initialiseGraphComponent(final mxGraphComponent graphComponent) {
+		final PetriGraph graph = (PetriGraph) graphComponent.getGraph();
+		
+		//getContentPane().add(graphComponent);
+		graphComponent.setGridVisible(true);
+		// Sets the background to white
+		graphComponent.getViewport().setOpaque(true);
+		graphComponent.getViewport().setBackground(Color.WHITE);
+		graphComponent.setBackground(Color.WHITE);
+		graphComponent.setEnterStopsCellEditing(true);
+
+		//final mxGraph graph2 = new PetriGraph(xmlDocument);
+		//graphComponent.setGraph(graph2);
+
+		graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
+		{
+
+			public void mouseReleased(MouseEvent e)
+			{
+				Object obj = graphComponent.getCellAt(e.getX(), e.getY());
+
+				if (obj != null && obj instanceof mxCell)
+				{
+					Object value = ((mxCell) obj).getValue();
+					if (value instanceof Element)
+					{
+						if (((Element) value).getTagName().equalsIgnoreCase("transition"))
+						{
+							if (graph.fireTransition(obj)) {
+								graph.checkEnabledFromTransition(obj);
+								graphComponent.refresh();
+							}
+						}
+					}
+				}
+			}
+		});
+
+		// Installs the popup menu in the graph component
+
+		graphComponent.getGraphControl().addMouseListener(new MouseAdapter()
+		{
+
+			/**
+			 * 
+			 */
+			public void mousePressed(MouseEvent e)
+			{
+				// Handles context menu on the Mac where the trigger is on mousepressed
+				mouseReleased(e);
+			}
+
+			/**
+			 * 
+			 */
+			public void mouseReleased(MouseEvent e)
+			{
+				if (e.isPopupTrigger())
+				{
+					showGraphPopupMenu(e);
+				}
+			}
+
+		});
+
+
+		new mxRubberband(graphComponent);
+		new mxKeyboardHandler(graphComponent);
 	}
 	
 	protected void showGraphPopupMenu(MouseEvent e)
@@ -321,8 +397,13 @@ public class HelloWorld extends JFrame
 	{
 		HelloWorld frame = new HelloWorld();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(400, 400);
+		//frame.setSize(400, 400);
 		frame.setVisible(true);
+		
+//		HelloWorld frame2 = new HelloWorld();
+//		frame2.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		//frame.setSize(400, 400);
+//		frame2.setVisible(true);
 	}
 
 }
