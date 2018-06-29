@@ -35,6 +35,16 @@ public class ReachabilityGraph extends mxGraph{
 		JFrame frame = new JFrame("Reachability");
 	}
 	
+	public boolean isCellSelectable(Object cell)
+	{
+	    if (getModel().isEdge(cell))
+	    {
+	        return false;
+	    }
+
+	    return super.isCellSelectable(cell);
+	}
+	
 	
 	public void calcReachability() {
 		Queue<Map<String, Integer>> queue = new ArrayDeque<Map<String, Integer>>();

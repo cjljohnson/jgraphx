@@ -295,7 +295,7 @@ public class PetriGraph extends mxGraph{
 	public Object createEdge(Object parent, String id, Object value,
 			Object source, Object target, String style)
 	{
-		if (value==null) {
+		if (! (value instanceof Element)) {
 			Element arc = xmlDocument.createElement("Arc");
 			arc.setAttribute("weight", "1");
 			value = arc;

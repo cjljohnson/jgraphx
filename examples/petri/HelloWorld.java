@@ -259,7 +259,7 @@ public class HelloWorld extends JFrame
 		ReachabilityGraph reach = new ReachabilityGraph(graph, 20);
 		long end = System.currentTimeMillis();
 		System.out.println(end - start);
-		JFrame frame2 = new JFrame("WOW");
+		JFrame frame2 = new JFrame("Reachability Graph");
 		mxGraphComponent reachComponent = new mxGraphComponent(reach);
 		frame2.setContentPane(reachComponent);
 		
