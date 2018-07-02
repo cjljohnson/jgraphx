@@ -28,22 +28,22 @@ public class PetriGraph extends mxGraph{
 	@Override
 	public boolean isCellEditable(Object cell)
 	{
-		if (cell instanceof mxCell)
-		{
-			Object value = ((mxCell) cell).getValue();
-
-			if (value instanceof Element)
-			{
-				Element elt = (Element) value;
-
-				if (elt.getTagName().equalsIgnoreCase("place"))
-				{
-					return true;
-				}
-				
+//		if (cell instanceof mxCell)
+//		{
+//			Object value = ((mxCell) cell).getValue();
+//
+//			if (value instanceof Element)
+//			{
+//				Element elt = (Element) value;
+//
+//				if (elt.getTagName().equalsIgnoreCase("place"))
+//				{
+//					return true;
+//				}
+//				
 				if (getModel().isEdge(cell)) return true;
-			}
-		}
+//			}
+//		}
 		return false;
 	}
 	
@@ -72,6 +72,27 @@ public class PetriGraph extends mxGraph{
 	public boolean isCellFoldable(Object cell, boolean collapse)
 	{
 		return false;
+	}
+	
+	public boolean isCellConnectable(Object cell) {
+		if (cell instanceof mxCell)
+		{
+			Object value = ((mxCell) cell).getValue();
+
+			if (value instanceof Element)
+			{
+				Element elt = (Element) value;
+
+				if (elt.getTagName().equalsIgnoreCase("place"))
+				{
+					if (getCellGeometry(cell).isRelative())
+						return false;
+				}
+				
+				//if (getModel().isEdge(cell)) return true;
+			}
+		}
+		return super.isCellSelectable(cell);
 	}
 	
 	@Override
@@ -151,7 +172,7 @@ public class PetriGraph extends mxGraph{
 				{
 					try {
 						int weight = Integer.parseInt(label);
-						if (weight < 0
+						if (weight < 1
 								) return;
 					} catch (Exception e) {
 						return;
@@ -194,6 +215,11 @@ public class PetriGraph extends mxGraph{
 				}
 			}
 		}
+	}
+	
+	public String validateEdge(Object edge, Object source, Object target)
+	{
+		return "";
 	}
 	
 	public boolean fireTransition(Object obj)

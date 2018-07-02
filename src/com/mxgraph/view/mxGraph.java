@@ -5177,7 +5177,7 @@ public class mxGraph extends mxEventSource
 				error.append(err);
 			}
 
-			return (error.length() > 0) ? error.toString() : null;
+			return (error.length() > 0) ? error.toString() : "";
 		}
 
 		return (allowDanglingEdges) ? null : "";

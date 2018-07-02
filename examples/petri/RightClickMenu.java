@@ -24,7 +24,7 @@ public class RightClickMenu extends JPopupMenu
 //		boolean selected = !hello.getGraphComponent().getGraph()
 //				.isSelectionEmpty();
 	    
-	    Object cell = hello.getGraphComponent().getCellAt(x, y);
+	    final Object cell = hello.getGraphComponent().getCellAt(x, y);
 	    
 	    if (cell != null) {
 	        Object value = ((mxCell)cell).getValue();
@@ -38,9 +38,21 @@ public class RightClickMenu extends JPopupMenu
                     tokensTF.setText(el.getAttribute("tokens"));
                     tokensTF.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent e) {
-
-                            el.setAttribute("tokens", tokensTF.getText());  
-                            hello.getGraphComponent().refresh();
+                        	int newTokens;
+                        	try {
+                        		newTokens = Integer.parseInt(tokensTF.getText());
+                        		if (newTokens >= 0 && newTokens <= Integer.parseInt(el.getAttribute("capacity"))) {
+                            		el.setAttribute("tokens", "" + newTokens);
+                            		((PetriGraph)hello.getGraphComponent().getGraph()).checkEnabledFromPlace(cell);
+                            		hello.getGraphComponent().refresh();
+                            		return;
+                            	}
+                        	} catch (Exception exc) {
+                        		
+                        	}
+                        	tokensTF.setText(el.getAttribute("tokens"));
+                    		return;
+                        	
                         }
                     });
                     tokensPanel.add(tokensL);
@@ -54,9 +66,22 @@ public class RightClickMenu extends JPopupMenu
                     capacityTF.setText(el.getAttribute("capacity"));
                     capacityTF.addActionListener(new java.awt.event.ActionListener() {
                         public void actionPerformed(java.awt.event.ActionEvent e) {
-
-                            el.setAttribute("capacity", capacityTF.getText());  
-                            hello.getGraphComponent().refresh();
+                        	int newCapacity;
+                        	try {
+                        		newCapacity = Integer.parseInt(capacityTF.getText());
+                        		if ((newCapacity > 0 && newCapacity >= Integer.parseInt(el.getAttribute("tokens"))) 
+                            			|| newCapacity == -1) {
+                            		el.setAttribute("capacity", "" + newCapacity);
+                            		((PetriGraph)hello.getGraphComponent().getGraph()).checkEnabledFromPlace(cell);
+                            		hello.getGraphComponent().refresh();
+                            		return;
+                            	}
+                        	} catch (Exception exc) {
+                        		
+                        	}
+                        	capacityTF.setText(el.getAttribute("capacity"));
+                    		return;
+                        	
                         }
                     });
                     capacityPanel.add(capacityL);
