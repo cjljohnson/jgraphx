@@ -67,6 +67,7 @@ public class ReachabilityGraph extends mxGraph{
 				i++;
 			}
 			graph.setPlaceTokens(s1);
+			setCellStyle(node.getStyle() + ";CURRENT", new Object[] {node});
 		} finally {
 			getModel().endUpdate();
 		}
@@ -100,7 +101,7 @@ public class ReachabilityGraph extends mxGraph{
 				}
 			}
 		}
-		setCellStyle("NODE;COMPLETE", new Object[] {node1});
+		setCellStyle(node1.getStyle() + ";COMPLETE", new Object[] {node1});
 	}
 	
 	private void initStyles() {
@@ -119,6 +120,10 @@ public class ReachabilityGraph extends mxGraph{
 		completeStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
 		stylesheet.putCellStyle("COMPLETE", completeStyle);
 		
+		Hashtable<String, Object> currentStyle = new Hashtable<String, Object>();
+        currentStyle.put(mxConstants.STYLE_FILLCOLOR, "#00FF00");
+        stylesheet.putCellStyle("CURRENT", currentStyle);
+		
 		Map<String, Object> edge = new HashMap<String, Object>();
 	    edge.put(mxConstants.STYLE_ROUNDED, true);
 	    edge.put(mxConstants.STYLE_ORTHOGONAL, false);
@@ -130,5 +135,24 @@ public class ReachabilityGraph extends mxGraph{
 	    edge.put(mxConstants.STYLE_STROKEWIDTH, 2);
 	    edge.put(mxConstants.STYLE_FONTCOLOR, "#000000");
 		getStylesheet().setDefaultEdgeStyle(edge);
+	}
+	
+	public void setActiveState(Object obj) {
+	    if (obj instanceof mxCell) {
+	        mxCell vertex = (mxCell)obj;
+	        if (vertex.getValue() instanceof Map<?,?>) {
+	            Map<String, Integer> currentState = graph.getPlaceTokens();
+	            mxCell currentCell = nodeMap.get(currentState);
+	            String style = currentCell.getStyle().replaceFirst(";CURRENT", "");
+	            setCellStyle(style, new Object[] {currentCell});
+	            setCellStyle(vertex.getStyle() + ";CURRENT", new Object[] {vertex});
+	            Map<String, Integer> state = (Map<String, Integer>)vertex.getValue();
+	            graph.setPlaceTokens(state);
+	            graph.checkEnabledTransitions();
+	            graph.refresh();
+	            
+	        }
+	    }
+	    
 	}
 }

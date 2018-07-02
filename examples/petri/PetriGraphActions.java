@@ -2,19 +2,28 @@ package petri;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashSet;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import com.mxgraph.canvas.mxICanvas;
 import com.mxgraph.canvas.mxSvgCanvas;
@@ -22,6 +31,10 @@ import com.mxgraph.examples.swing.editor.BasicGraphEditor;
 import com.mxgraph.examples.swing.editor.DefaultFileFilter;
 import com.mxgraph.io.mxCodec;
 import com.mxgraph.io.mxGdCodec;
+import com.mxgraph.layout.mxFastOrganicLayout;
+import com.mxgraph.layout.mxIGraphLayout;
+import com.mxgraph.model.mxCell;
+import com.mxgraph.model.mxGraphModel;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxCellRenderer;
 import com.mxgraph.util.mxDomUtils;
@@ -31,6 +44,7 @@ import com.mxgraph.util.mxXmlUtils;
 import com.mxgraph.util.mxCellRenderer.CanvasFactory;
 import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
+import com.mxgraph.util.png.mxPngTextDecoder;
 import com.mxgraph.view.mxGraph;
 
 public class PetriGraphActions {
@@ -38,9 +52,9 @@ public class PetriGraphActions {
 //    static final Action createPlaceAction = new CreatePlaceAction(
 //            "createPlace");
 //    
-//    static final Action createTransitionAction = new CreateTransitionAction(
-//            "createTransition");
-//    
+    private static final Action createReachabilityAction = new CreateReachabilityAction(
+            "createReachability");
+    
     public static Action getCreatePlaceAction(int x, int y)
     {
         return new CreatePlaceAction("createPlace", x, y);
@@ -49,6 +63,11 @@ public class PetriGraphActions {
     public static Action getCreateTransitionAction(int x, int y)
     {
         return new CreateTransitionAction("createTransition", x, y);
+    }
+    
+    public static Action getCreateReachabilityAction()
+    {
+        return createReachabilityAction;
     }
     
     public static final mxGraph getGraph(ActionEvent e)
@@ -139,6 +158,82 @@ public class PetriGraphActions {
             if (graph != null)
             {
                 graph.addTransition(x, y);
+            }
+        }
+    }
+    
+    /**
+     * 
+     */
+    public static class CreateReachabilityAction extends AbstractAction
+    {
+
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 938191175262154014L;
+
+        /**
+         * 
+         */
+
+        /**
+         * 
+         * @param name
+         */
+        public CreateReachabilityAction(String name)
+        {
+            super(name);
+        }
+
+        /**
+         * 
+         */
+        public void actionPerformed(ActionEvent e)
+        {
+            final PetriGraph graph = (PetriGraph) getGraph(e);
+
+            if (graph != null)
+            {
+                long start = System.currentTimeMillis();
+                final ReachabilityGraph reach = new ReachabilityGraph(graph, 200);
+                long end = System.currentTimeMillis();
+                System.out.println(end - start);
+                JFrame frame2 = new JFrame("Reachability Graph");
+                
+                // define layout
+                mxIGraphLayout layout = new mxFastOrganicLayout(reach);
+
+                // layout graph
+                layout.execute(reach.getDefaultParent());
+                
+                final mxGraphComponent reachComponent = new mxGraphComponent(reach);
+                
+                reachComponent.getGraphControl().addMouseListener(new MouseAdapter()
+                {
+
+                    public void mouseReleased(MouseEvent e)
+                    {
+                        Object obj = reachComponent.getCellAt(e.getX(), e.getY());
+
+                        if (obj != null && obj instanceof mxCell && e.getClickCount() == 2)
+                        {
+                            
+                            Object value = ((mxCell) obj).getValue();
+                            if (value instanceof Map<?,?>)
+                            {
+                                reach.setActiveState(obj);
+                            }
+                        }
+                    }
+                });
+                
+                
+                frame2.setContentPane(reachComponent);
+                
+                reachComponent.setConnectable(false);
+                frame2.setSize(400, 400);
+                frame2.setVisible(true);
             }
         }
     }
@@ -442,5 +537,196 @@ public class PetriGraphActions {
            }
        }
    }
+   
+//   /**
+//   *
+//   */
+//  @SuppressWarnings("serial")
+//  public static class OpenAction extends AbstractAction
+//  {
+//      /**
+//       * 
+//       */
+//      protected String lastDir;
+//
+//      /**
+//       * 
+//       */
+//      protected void resetEditor(BasicGraphEditor editor)
+//      {
+//          editor.setModified(false);
+//          editor.getUndoManager().clear();
+//          editor.getGraphComponent().zoomAndCenter();
+//      }
+//
+//      /**
+//       * Reads XML+PNG format.
+//       */
+//      protected void openXmlPng(BasicGraphEditor editor, File file)
+//              throws IOException
+//      {
+//          Map<String, String> text = mxPngTextDecoder
+//                  .decodeCompressedText(new FileInputStream(file));
+//
+//          if (text != null)
+//          {
+//              String value = text.get("mxGraphModel");
+//
+//              if (value != null)
+//              {
+//                  Document document = mxXmlUtils.parseXml(URLDecoder.decode(
+//                          value, "UTF-8"));
+//                  mxCodec codec = new mxCodec(document);
+//                  codec.decode(document.getDocumentElement(), editor
+//                          .getGraphComponent().getGraph().getModel());
+//                  editor.setCurrentFile(file);
+//                  resetEditor(editor);
+//
+//                  return;
+//              }
+//          }
+//
+//          JOptionPane.showMessageDialog(editor,
+//                  mxResources.get("imageContainsNoDiagramData"));
+//      }
+//
+//      /**
+//       * @throws IOException
+//       *
+//       */
+//      protected void openGD(BasicGraphEditor editor, File file,
+//              String gdText)
+//      {
+//          mxGraph graph = editor.getGraphComponent().getGraph();
+//
+//          // Replaces file extension with .mxe
+//          String filename = file.getName();
+//          filename = filename.substring(0, filename.length() - 4) + ".mxe";
+//
+//          if (new File(filename).exists()
+//                  && JOptionPane.showConfirmDialog(editor,
+//                          mxResources.get("overwriteExistingFile")) != JOptionPane.YES_OPTION)
+//          {
+//              return;
+//          }
+//
+//          ((mxGraphModel) graph.getModel()).clear();
+//          mxGdCodec.decode(gdText, graph);
+//          editor.getGraphComponent().zoomAndCenter();
+//          editor.setCurrentFile(new File(lastDir + "/" + filename));
+//      }
+//
+//      /**
+//       * 
+//       */
+//      public void actionPerformed(ActionEvent e)
+//      {
+//          BasicGraphEditor editor = getEditor(e);
+//
+//          if (editor != null)
+//          {
+//              if (!editor.isModified()
+//                      || JOptionPane.showConfirmDialog(editor,
+//                              mxResources.get("loseChanges")) == JOptionPane.YES_OPTION)
+//              {
+//                  mxGraph graph = editor.getGraphComponent().getGraph();
+//
+//                  if (graph != null)
+//                  {
+//                      String wd = (lastDir != null) ? lastDir : System
+//                              .getProperty("user.dir");
+//
+//                      JFileChooser fc = new JFileChooser(wd);
+//
+//                      // Adds file filter for supported file format
+//                      DefaultFileFilter defaultFilter = new DefaultFileFilter(
+//                              ".mxe", mxResources.get("allSupportedFormats")
+//                                      + " (.mxe, .png, .vdx)")
+//                      {
+//
+//                          public boolean accept(File file)
+//                          {
+//                              String lcase = file.getName().toLowerCase();
+//
+//                              return super.accept(file)
+//                                      || lcase.endsWith(".png")
+//                                      || lcase.endsWith(".vdx");
+//                          }
+//                      };
+//                      fc.addChoosableFileFilter(defaultFilter);
+//
+//                      fc.addChoosableFileFilter(new DefaultFileFilter(".mxe",
+//                              "mxGraph Editor " + mxResources.get("file")
+//                                      + " (.mxe)"));
+//                      fc.addChoosableFileFilter(new DefaultFileFilter(".png",
+//                              "PNG+XML  " + mxResources.get("file")
+//                                      + " (.png)"));
+//
+//                      // Adds file filter for VDX import
+//                      fc.addChoosableFileFilter(new DefaultFileFilter(".vdx",
+//                              "XML Drawing  " + mxResources.get("file")
+//                                      + " (.vdx)"));
+//
+//                      // Adds file filter for GD import
+//                      fc.addChoosableFileFilter(new DefaultFileFilter(".txt",
+//                              "Graph Drawing  " + mxResources.get("file")
+//                                      + " (.txt)"));
+//
+//                      fc.setFileFilter(defaultFilter);
+//
+//                      int rc = fc.showDialog(null,
+//                              mxResources.get("openFile"));
+//
+//                      if (rc == JFileChooser.APPROVE_OPTION)
+//                      {
+//                          lastDir = fc.getSelectedFile().getParent();
+//
+//                          try
+//                          {
+//                              if (fc.getSelectedFile().getAbsolutePath()
+//                                      .toLowerCase().endsWith(".png"))
+//                              {
+//                                  openXmlPng(editor, fc.getSelectedFile());
+//                              }
+//                              else if (fc.getSelectedFile().getAbsolutePath()
+//                                      .toLowerCase().endsWith(".txt"))
+//                              {
+//                                  openGD(editor, fc.getSelectedFile(),
+//                                          mxUtils.readFile(fc
+//                                                  .getSelectedFile()
+//                                                  .getAbsolutePath()));
+//                              }
+//                              else
+//                              {
+//                                  Document document = mxXmlUtils
+//                                          .parseXml(mxUtils.readFile(fc
+//                                                  .getSelectedFile()
+//                                                  .getAbsolutePath()));
+//
+//                                  mxCodec codec = new mxCodec(document);
+//                                  codec.decode(
+//                                          document.getDocumentElement(),
+//                                          graph.getModel());
+//                                  editor.setCurrentFile(fc
+//                                          .getSelectedFile());
+//
+//                                  resetEditor(editor);
+//                              }
+//                          }
+//                          catch (IOException ex)
+//                          {
+//                              ex.printStackTrace();
+//                              JOptionPane.showMessageDialog(
+//                                      editor.getGraphComponent(),
+//                                      ex.toString(),
+//                                      mxResources.get("error"),
+//                                      JOptionPane.ERROR_MESSAGE);
+//                          }
+//                      }
+//                  }
+//              }
+//          }
+//      }
+//  }
 
 }

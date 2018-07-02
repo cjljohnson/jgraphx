@@ -23,6 +23,8 @@ import org.w3c.dom.Element;
 
 import com.mxgraph.examples.swing.editor.BasicGraphEditor;
 import com.mxgraph.examples.swing.editor.EditorPopupMenu;
+import com.mxgraph.layout.mxFastOrganicLayout;
+import com.mxgraph.layout.mxIGraphLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGraphModel;
 import com.mxgraph.model.mxIGraphModel;
@@ -44,7 +46,11 @@ public class HelloWorld extends JFrame
 {
 	mxGraphComponent graphComponent;
 
-	/**
+
+
+
+
+    /**
 	 * 
 	 */
 	private static final long serialVersionUID = -2707712944901661771L;
@@ -122,6 +128,9 @@ public class HelloWorld extends JFrame
 		placeStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
 		placeStyle.put(mxConstants.STYLE_STROKEWIDTH, 5);
 		placeStyle.put(mxConstants.STYLE_NOLABEL, false);
+		placeStyle.put(mxConstants.STYLE_PERIMETER, mxConstants.PERIMETER_ELLIPSE);
+		placeStyle.put(mxConstants.STYLE_PERIMETER_SPACING, 4);
+		//perimeter=ellipsePerimeter
 		stylesheet.putCellStyle("PLACE", placeStyle);
 		
 		Hashtable<String, Object> placeCapacityStyle = new Hashtable<String, Object>();
@@ -138,6 +147,7 @@ public class HelloWorld extends JFrame
 		transitionStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
 		transitionStyle.put(mxConstants.STYLE_STROKEWIDTH, 5);
 		transitionStyle.put(mxConstants.STYLE_NOLABEL, true);
+		transitionStyle.put(mxConstants.STYLE_PERIMETER_SPACING, 4);
 		stylesheet.putCellStyle("TRANSITION", transitionStyle);
 		
 
@@ -150,7 +160,7 @@ public class HelloWorld extends JFrame
 		arcStyle.put(mxConstants.STYLE_FONTCOLOR, "#000000");
 		arcStyle.put(mxConstants.STYLE_FILLCOLOR, "#FFFFFF");
 		arcStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
-		arcStyle.put(mxConstants.STYLE_STROKEWIDTH, 2);
+		arcStyle.put(mxConstants.STYLE_STROKEWIDTH, 5);
 		stylesheet.putCellStyle("ARC", arcStyle);
 		
 		applyEdgeDefaults(graph);
@@ -204,13 +214,13 @@ public class HelloWorld extends JFrame
 		
 		
 		
-		JPanel panel = new JPanel();
-		getContentPane().add(panel);
+//		JPanel panel = new JPanel();
+//		getContentPane().add(panel);
 		
 		graphComponent = new mxGraphComponent(graph);
-		panel.add(graphComponent);
+//		panel.add(graphComponent);
 		initialiseGraphComponent(graphComponent);
-		
+		getContentPane().add(graphComponent);
 		
 		graph.addListener(mxEvent.CELL_CONNECTED, new mxIEventListener() {
             public void invoke(Object sender, mxEventObject evt) {
@@ -232,19 +242,19 @@ public class HelloWorld extends JFrame
         });
 		
 		
-		PetriGraph graph2 = new PetriGraph(xmlDocument);
-		graph2.addCells(graph.cloneCells(graph.getChildCells(graph.getDefaultParent())));
-		mxStylesheet stylesheet2 = graph2.getStylesheet();
-		stylesheet2.putCellStyle("PLACE", placeStyle);
-		stylesheet2.putCellStyle("TRANSITION", transitionStyle);
-		stylesheet2.putCellStyle("ACTIVETRANSITION", activeTransitionStyle);
-		stylesheet2.putCellStyle("ARC", arcStyle);
-		
-		
-		mxGraphComponent graphComponent2 = new mxGraphComponent(graph2);
-		initialiseGraphComponent(graphComponent2);
-		graphComponent2.refresh();
-		panel.add(graphComponent2);
+//		PetriGraph graph2 = new PetriGraph(xmlDocument);
+//		graph2.addCells(graph.cloneCells(graph.getChildCells(graph.getDefaultParent())));
+//		mxStylesheet stylesheet2 = graph2.getStylesheet();
+//		stylesheet2.putCellStyle("PLACE", placeStyle);
+//		stylesheet2.putCellStyle("TRANSITION", transitionStyle);
+//		stylesheet2.putCellStyle("ACTIVETRANSITION", activeTransitionStyle);
+//		stylesheet2.putCellStyle("ARC", arcStyle);
+//		
+//		
+//		mxGraphComponent graphComponent2 = new mxGraphComponent(graph2);
+//		initialiseGraphComponent(graphComponent2);
+//		graphComponent2.refresh();
+//		panel.add(graphComponent2);
 		
 		
 		Map<String, Integer> tokenMap = graph.getPlaceTokens();
@@ -253,19 +263,6 @@ public class HelloWorld extends JFrame
 		graphComponent.refresh();
 		
 		pack();
-		
-		
-		long start = System.currentTimeMillis();
-		ReachabilityGraph reach = new ReachabilityGraph(graph, 20);
-		long end = System.currentTimeMillis();
-		System.out.println(end - start);
-		JFrame frame2 = new JFrame("Reachability Graph");
-		mxGraphComponent reachComponent = new mxGraphComponent(reach);
-		frame2.setContentPane(reachComponent);
-		
-		reachComponent.setConnectable(false);
-		frame2.setSize(400, 400);
-		frame2.setVisible(true);
 	}
 	
 	public void initialiseGraphComponent(final mxGraphComponent graphComponent) {
@@ -289,7 +286,7 @@ public class HelloWorld extends JFrame
 			{
 				Object obj = graphComponent.getCellAt(e.getX(), e.getY());
 
-				if (obj != null && obj instanceof mxCell)
+				if (obj != null && obj instanceof mxCell && e.getClickCount() == 2)
 				{
 					Object value = ((mxCell) obj).getValue();
 					if (value instanceof Element)
@@ -381,7 +378,7 @@ public class HelloWorld extends JFrame
 	private void applyEdgeDefaults(mxGraph graph) {
 	    // Settings for edges
 	    Map<String, Object> edge = new HashMap<String, Object>();
-	    edge.put(mxConstants.STYLE_ROUNDED, true);
+	    //edge.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_CURVE);
 	    edge.put(mxConstants.STYLE_ORTHOGONAL, false);
 	    edge.put(mxConstants.STYLE_SHAPE, mxConstants.SHAPE_CONNECTOR);
 	    edge.put(mxConstants.STYLE_ENDARROW, mxConstants.ARROW_CLASSIC);
@@ -392,6 +389,10 @@ public class HelloWorld extends JFrame
 	    edge.put(mxConstants.STYLE_FONTCOLOR, "#000000");
 
 	    graph.getStylesheet().setDefaultEdgeStyle(edge);
+	}
+	
+	public final mxGraphComponent getGraphComponent() {
+	    return graphComponent;
 	}
 	
 	
