@@ -93,29 +93,20 @@ public class HelloWorld extends JFrame
 		Element arc2 = xmlDocument.createElement("Arc");
 		Element arc3 = xmlDocument.createElement("Arc");
 		Element arc4 = xmlDocument.createElement("Arc");
+		Element arc5 = xmlDocument.createElement("Arc");
+		Element arc6 = xmlDocument.createElement("Arc");
 		arc1.setAttribute("weight", "3");
 		arc2.setAttribute("weight", "2");
 		arc3.setAttribute("weight", "2");
 		arc4.setAttribute("weight", "4");
+		arc5.setAttribute("weight", "4");
+		arc6.setAttribute("weight", "4");
 		
 		System.out.println(arc4.getAttribute("weight"));
 		
 
 		final PetriGraph graph = new PetriGraph(xmlDocument);
 		Object parent = graph.getDefaultParent();
-		
-//		mxSwingConstants.SHADOW_COLOR = null;
-//		mxSwingConstants.DEFAULT_VALID_COLOR = null;
-//		mxSwingConstants.DEFAULT_INVALID_COLOR = null;
-//		mxSwingConstants.RUBBERBAND_BORDERCOLOR = null;
-//		mxSwingConstants.RUBBERBAND_FILLCOLOR = null;
-//		mxSwingConstants.HANDLE_BORDERCOLOR = null;
-//		mxSwingConstants.HANDLE_FILLCOLOR = null;
-//		mxSwingConstants.LABEL_HANDLE_FILLCOLOR = null;
-//		mxSwingConstants.LOCKED_HANDLE_FILLCOLOR = null;
-//		mxSwingConstants.CONNECT_HANDLE_FILLCOLOR = null;
-//		mxSwingConstants.EDGE_SELECTION_COLOR = null;
-//		mxSwingConstants.VERTEX_SELECTION_COLOR = null;
 
 		graph.getModel().beginUpdate();
 		
@@ -130,7 +121,6 @@ public class HelloWorld extends JFrame
 		placeStyle.put(mxConstants.STYLE_NOLABEL, false);
 		placeStyle.put(mxConstants.STYLE_PERIMETER, mxConstants.PERIMETER_ELLIPSE);
 		placeStyle.put(mxConstants.STYLE_PERIMETER_SPACING, 4);
-		//perimeter=ellipsePerimeter
 		stylesheet.putCellStyle("PLACE", placeStyle);
 		
 		Hashtable<String, Object> placeCapacityStyle = new Hashtable<String, Object>();
@@ -180,13 +170,16 @@ public class HelloWorld extends JFrame
 			graph.insertEdge(parent, null, arc3, v2, v4, null);
 			graph.insertEdge(parent, null, arc4, v4, v3, null);
 			
-			graph.insertEdge(parent, null, arc4, v4, t3, null);
-			graph.insertEdge(parent, null, arc4, t3, v1, null);
+			graph.insertEdge(parent, null, arc5, v4, t3, null);
+			graph.insertEdge(parent, null, arc6, t3, v1, null);
 			
 			graph.setCellsResizable(false);
 			graph.setMultigraph(false);
 			graph.setAllowDanglingEdges(false);
+			graph.setSplitEnabled(false);
+			graph.setDropEnabled(false);
 			graph.checkEnabledTransitions();
+			graph.setEdgeLabelsMovable(false);
 		}
 		finally
 		{
@@ -275,6 +268,7 @@ public class HelloWorld extends JFrame
 		graphComponent.getViewport().setBackground(Color.WHITE);
 		graphComponent.setBackground(Color.WHITE);
 		graphComponent.setEnterStopsCellEditing(true);
+		graphComponent.setDragEnabled(false);
 
 		//final mxGraph graph2 = new PetriGraph(xmlDocument);
 		//graphComponent.setGraph(graph2);

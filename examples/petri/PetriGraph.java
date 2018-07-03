@@ -41,7 +41,7 @@ public class PetriGraph extends mxGraph{
 //					return true;
 //				}
 //				
-				if (getModel().isEdge(cell)) return true;
+//				if (getModel().isEdge(cell)) return true;
 //			}
 //		}
 		return false;
