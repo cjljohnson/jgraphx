@@ -117,6 +117,7 @@ public class mxMultiplicity
 			Object target, int sourceOut, int targetIn)
 	{
 		StringBuffer error = new StringBuffer();
+		boolean hasError = false;
 
 		if ((this.source && checkTerminal(graph, source, edge))
 				|| (!this.source && checkTerminal(graph, target, edge)))
@@ -128,7 +129,9 @@ public class mxMultiplicity
 				if (m == 0 || (this.source && sourceOut >= m)
 						|| (!this.source && targetIn >= m))
 				{
-					error.append(countError + "\n");
+				    hasError = true;
+				    if (!countError.isEmpty())
+				        error.append(countError + "\n");
 				}
 			}
 
@@ -138,12 +141,14 @@ public class mxMultiplicity
 
 				if (!isValid)
 				{
-					error.append(typeError + "\n");
+				    hasError = true;
+				    if (!typeError.isEmpty())
+				        error.append(typeError + "\n");
 				}
 			}
 		}
 
-		return (error.length() > 0) ? error.toString() : null;
+		return (hasError) ? error.toString() : null;
 	}
 
 	/**

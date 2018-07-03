@@ -201,16 +201,16 @@ public class HelloWorld extends JFrame
 		multiplicities[0] = new mxMultiplicity(true, "Place", null, null, 0,
 				"n", Arrays.asList(new String[] { "Transition" }),
 				null,
-				"Places can only connect to Transitions", true);
+				"", true);
 
 
 		// Target needs exactly one incoming connection from Source
 		multiplicities[1] = new mxMultiplicity(true, "Transition", null, null, 0,
 				"n", Arrays.asList(new String[] { "Place" }),
-				null, "Transitions can only connect to Places",
+				null, "",
 				true);
 
-		graph.setMultiplicities(multiplicities);
+//		graph.setMultiplicities(multiplicities);
 		
 		
 		

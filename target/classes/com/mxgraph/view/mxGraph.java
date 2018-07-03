@@ -5130,6 +5130,7 @@ public class mxGraph extends mxEventSource
 		if (source != null && target != null)
 		{
 			StringBuffer error = new StringBuffer();
+			boolean hasError = false;
 
 			// Checks if the cells are already connected
 			// and adds an error message if required			
@@ -5141,6 +5142,7 @@ public class mxGraph extends mxEventSource
 				// Checks if the source and target are not connected by another edge
 				if (tmp.length > 1 || (tmp.length == 1 && tmp[0] != edge))
 				{
+				    hasError = true;
 					error.append(mxResources.get("alreadyConnected",
 							"Already Connected") + "\n");
 				}
@@ -5164,6 +5166,7 @@ public class mxGraph extends mxEventSource
 
 					if (err != null)
 					{
+					    hasError = true;
 						error.append(err);
 					}
 				}
@@ -5174,10 +5177,11 @@ public class mxGraph extends mxEventSource
 
 			if (err != null)
 			{
+			    hasError = true;
 				error.append(err);
 			}
 
-			return (error.length() > 0) ? error.toString() : "";
+			return (hasError) ? error.toString() : null;
 		}
 
 		return (allowDanglingEdges) ? null : "";

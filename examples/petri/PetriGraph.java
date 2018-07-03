@@ -219,7 +219,24 @@ public class PetriGraph extends mxGraph{
 	
 	public String validateEdge(Object edge, Object source, Object target)
 	{
-		return "";
+	    if (source != null && source instanceof mxCell
+	            && target != null && target instanceof mxCell) {
+            Object sourceValue = ((mxCell)source).getValue();
+            Object targetValue = ((mxCell)target).getValue();
+            if (sourceValue instanceof Element 
+                    && targetValue instanceof Element) {
+                final Element sourceEl = (Element)sourceValue;
+                final Element targetEl = (Element)targetValue;
+                if (sourceEl.getTagName().equalsIgnoreCase("place")
+                        && targetEl.getTagName().equalsIgnoreCase("transition")) {
+                    return null;
+                } else if (sourceEl.getTagName().equalsIgnoreCase("transition")
+                        && targetEl.getTagName().equalsIgnoreCase("place")) {
+                    return null;
+                }
+            }
+	    }
+	    return "";
 	}
 	
 	public boolean fireTransition(Object obj)
