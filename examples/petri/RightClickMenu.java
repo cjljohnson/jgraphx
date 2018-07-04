@@ -83,7 +83,8 @@ public class RightClickMenu extends JPopupMenu
                 	int newTokens;
                 	try {
                 		newTokens = Integer.parseInt(tokensTF.getText());
-                		if (newTokens >= 0 && newTokens <= Integer.parseInt(el.getAttribute("capacity"))) {
+                		int capacity = Integer.parseInt(el.getAttribute("capacity"));
+                		if (newTokens >= 0 && (newTokens <= capacity || capacity == -1)) {
                     		el.setAttribute("tokens", "" + newTokens);
                     		((PetriGraph)hello.getGraphComponent().getGraph()).checkEnabledFromPlace(cell);
                     		hello.getGraphComponent().refresh();
@@ -105,23 +106,34 @@ public class RightClickMenu extends JPopupMenu
             JPanel capacityPanel = new JPanel();
             JLabel capacityL = new JLabel("Capacity:");
             final JTextField capacityTF = new JTextField(5);
-            capacityTF.setText(el.getAttribute("capacity"));
+            if (el.getAttribute("capacity").equalsIgnoreCase("-1")) {
+                capacityTF.setText("n");
+            } else {
+                capacityTF.setText(el.getAttribute("capacity"));
+            }
             capacityTF.addActionListener(new java.awt.event.ActionListener() {
                 public void actionPerformed(java.awt.event.ActionEvent e) {
                 	int newCapacity;
                 	try {
-                		newCapacity = Integer.parseInt(capacityTF.getText());
+                	    if (capacityTF.getText().equalsIgnoreCase("n")) {
+                	        newCapacity = -1;
+                	    } else {
+                	        newCapacity = Integer.parseInt(capacityTF.getText());
+                	    }
                 		if ((newCapacity > 0 && newCapacity >= Integer.parseInt(el.getAttribute("tokens"))) 
                     			|| newCapacity == -1) {
                     		el.setAttribute("capacity", "" + newCapacity);
                     		((PetriGraph)hello.getGraphComponent().getGraph()).checkEnabledFromPlace(cell);
                     		hello.getGraphComponent().refresh();
-                    		return;
                     	}
                 	} catch (Exception exc) {
                 		
                 	}
-                	capacityTF.setText(el.getAttribute("capacity"));
+                	if (el.getAttribute("capacity").equalsIgnoreCase("-1")) {
+                        capacityTF.setText("n");
+                    } else {
+                        capacityTF.setText(el.getAttribute("capacity"));
+                    }
             		return;
                 	
                 }

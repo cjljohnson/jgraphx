@@ -110,6 +110,9 @@ public class PetriGraph extends mxGraph{
 				{
 					if (getCellGeometry(cell).isRelative()) { // Capacity label
 						String capacity = elt.getAttribute("capacity");
+						if (capacity.equals("-1")) {
+						    capacity = "n";
+						}
 						return "k = " + capacity;
 					} else {
 					String tokens = elt.getAttribute("tokens");
