@@ -4,6 +4,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
+import javax.swing.TransferHandler;
 
 import org.w3c.dom.Element;
 
@@ -11,6 +12,7 @@ import com.mxgraph.examples.swing.editor.EditorActions.HistoryAction;
 import com.mxgraph.examples.swing.editor.EditorActions.OpenAction;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.util.mxGraphActions;
+import com.mxgraph.util.mxResources;
 
 public class RightClickMenu extends JPopupMenu
 {
@@ -35,20 +37,22 @@ public class RightClickMenu extends JPopupMenu
                 	placeMenu(hello, cell, el);
                 } else if (el.getTagName().equalsIgnoreCase("arc")) {
                 	arcMenu(hello, cell, el);
+                } else if (el.getTagName().equalsIgnoreCase("transition")) {
+                    transitionMenu(hello, cell, el);
                 }
             }
 	    }
 	    
 	    add(hello.bind("Place", PetriGraphActions.getCreatePlaceAction(x, y),
-                        "/com/mxgraph/examples/swing/images/oval_start.gif"));
+                        "/petri/images/place.gif"));
 	    
 	    add(hello.bind("Transition", PetriGraphActions.getCreateTransitionAction(x, y),
-	                    "/com/mxgraph/examples/swing/images/oval_end.gif"));
+	                    "/petri/images/transition.gif"));
 	    
 	    addSeparator();
 	    
 	    add(hello.bind("Reach", PetriGraphActions.getCreateReachabilityAction(),
-                "/com/mxgraph/examples/swing/images/oval_end.gif"));
+	            "/petri/images/reach.gif"));
 	    
 	    addSeparator();
 
@@ -66,8 +70,8 @@ public class RightClickMenu extends JPopupMenu
 		
 //		add(hello.bind("Load", new PetriGraphActions.LoadAction(true), "/com/mxgraph/examples/swing/images/load.gif"));
 	}
-	
-	private void placeMenu(final HelloWorld hello, final Object cell, final Element el) {
+
+    private void placeMenu(final HelloWorld hello, final Object cell, final Element el) {
 		
             // Tokens
             JPanel tokensPanel = new JPanel();
@@ -160,5 +164,17 @@ public class RightClickMenu extends JPopupMenu
         
         addSeparator();
 	}
+	
+	private void transitionMenu(HelloWorld hello, Object cell, Element el) {
+        
+	    boolean isFirable = ((PetriGraph)hello.getGraphComponent().getGraph()).isFirable(cell);
+	    
+	    add(
+                hello.bind("Fire Transition", new PetriGraphActions.FireTransitionAction(cell),
+                        "/com/mxgraph/examples/swing/images/classic_end.gif"))
+                .setEnabled(isFirable);
+	    
+	    addSeparator();
+    }
 
 }

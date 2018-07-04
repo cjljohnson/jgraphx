@@ -238,6 +238,38 @@ public class PetriGraphActions {
         }
     }
     
+    public static class FireTransitionAction extends AbstractAction
+    {
+
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 3506472973595637136L;
+        private Object cell;
+
+        /**
+         * 
+         * @param name
+         */
+        public FireTransitionAction(Object cell)
+        {
+           this.cell = cell;
+        }
+
+        /**
+         * 
+         */
+        public void actionPerformed(ActionEvent e)
+        {
+            PetriGraph graph = (PetriGraph) getGraph(e);
+
+            if (graph != null)
+            {
+                graph.fireTransition(cell);
+            }
+        }
+    }
+    
     /**
     *
     */
