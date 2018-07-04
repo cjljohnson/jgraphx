@@ -16,6 +16,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -47,6 +48,7 @@ import com.mxgraph.view.mxStylesheet;
 public class HelloWorld extends JFrame
 {
 	mxGraphComponent graphComponent;
+	JTabbedPane tabbedPane;
 
 
 
@@ -138,7 +140,7 @@ public class HelloWorld extends JFrame
 		transitionStyle.put(mxConstants.STYLE_FILLCOLOR, "#FFFFFF");
 		transitionStyle.put(mxConstants.STYLE_STROKECOLOR, "#000000");
 		transitionStyle.put(mxConstants.STYLE_STROKEWIDTH, 5);
-		transitionStyle.put(mxConstants.STYLE_NOLABEL, true);
+		transitionStyle.put(mxConstants.STYLE_NOLABEL, false);
 		transitionStyle.put(mxConstants.STYLE_PERIMETER_SPACING, 4);
 		stylesheet.putCellStyle("TRANSITION", transitionStyle);
 		
@@ -215,7 +217,11 @@ public class HelloWorld extends JFrame
 		graphComponent = new mxGraphComponent(graph);
 //		panel.add(graphComponent);
 		initialiseGraphComponent(graphComponent);
-		getContentPane().add(graphComponent);
+		
+		tabbedPane = new JTabbedPane();
+		tabbedPane.addTab("Petri", null, graphComponent,
+                "Petri Graph");
+		getContentPane().add(tabbedPane);
 		
 		graph.addListener(mxEvent.CELL_CONNECTED, new mxIEventListener() {
             public void invoke(Object sender, mxEventObject evt) {
@@ -233,6 +239,7 @@ public class HelloWorld extends JFrame
                 for (Object cell : cells) {
                 	graph.checkEnabledFromEdge(cell);
                 }
+                graph.refresh();
             }
         });
 		
@@ -252,10 +259,10 @@ public class HelloWorld extends JFrame
 //		panel.add(graphComponent2);
 		
 		
-		Map<String, Integer> tokenMap = graph.getPlaceTokens();
-		tokenMap.put("6", 10);
-		graph.setPlaceTokens(tokenMap);
-		graphComponent.refresh();
+//		Map<String, Integer> tokenMap = graph.getPlaceTokens();
+//		tokenMap.put("6", 10);
+//		graph.setPlaceTokens(tokenMap);
+//		graphComponent.refresh();
 		
 		pack();
 	}
@@ -335,7 +342,7 @@ public class HelloWorld extends JFrame
 	{
 		Point pt = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(),
 				graphComponent);
-		RightClickMenu menu = new RightClickMenu(this, pt.x, pt.y);
+		PetriRightClick menu = new PetriRightClick(this, pt.x, pt.y);
 		menu.show(graphComponent, pt.x, pt.y);
 
 		e.consume();
@@ -371,6 +378,24 @@ public class HelloWorld extends JFrame
 		return newAction;
 	}
 	
+	@SuppressWarnings("serial")
+	public Action bind2(String name, final Action action, String iconUrl)
+	{
+		AbstractAction newAction = new AbstractAction(name, (iconUrl != null) ? new ImageIcon(
+				BasicGraphEditor.class.getResource(iconUrl)) : null)
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				action.actionPerformed(new ActionEvent(tabbedPane, e
+						.getID(), e.getActionCommand()));
+			}
+		};
+		
+		newAction.putValue(Action.SHORT_DESCRIPTION, action.getValue(Action.SHORT_DESCRIPTION));
+		
+		return newAction;
+	}
+	
 	private void applyEdgeDefaults(mxGraph graph) {
 	    // Settings for edges
 	    Map<String, Object> edge = new HashMap<String, Object>();
@@ -395,7 +420,7 @@ public class HelloWorld extends JFrame
 
 	public static void main(String[] args)
 	{
-		HelloWorld frame = new HelloWorld();
+		
 		try {
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
         } catch (ClassNotFoundException e) {
@@ -411,6 +436,7 @@ public class HelloWorld extends JFrame
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+		HelloWorld frame = new HelloWorld();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		//frame.setSize(400, 400);
 		frame.setVisible(true);

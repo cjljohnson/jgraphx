@@ -113,7 +113,7 @@ public class PetriGraph extends mxGraph{
 						if (capacity.equals("-1")) {
 						    capacity = "n";
 						}
-						return "k = " + capacity;
+						return "k = " + capacity + "\np" + getCellMarkingName(cell);
 					} else {
 					String tokens = elt.getAttribute("tokens");
 
@@ -123,6 +123,10 @@ public class PetriGraph extends mxGraph{
 				else if (elt.getTagName().equalsIgnoreCase("arc"))
 				{
 					return elt.getAttribute("weight");
+				}
+				else if (elt.getTagName().equalsIgnoreCase("transition"))
+				{
+					return "t" + getCellMarkingName(cell);
 				}
 
 			}
@@ -305,7 +309,7 @@ public class PetriGraph extends mxGraph{
 			place1.setAttribute("capacity", "" + capacity);
 			cell = insertVertex(getDefaultParent(), null, place1, x, y,
 				40, 40, "PLACE");
-			mxGeometry geo1 = new mxGeometry(0, 1, 40,
+			mxGeometry geo1 = new mxGeometry(0, 1.2, 40,
 					20);
 			geo1.setRelative(true);
 			mxCell capLabel = new mxCell(place1, geo1,
@@ -647,6 +651,43 @@ public class PetriGraph extends mxGraph{
 				}
 			}
 		}
+	}
+	
+	public int getCellMarkingName(Object cell) {
+//		System.out.println(cell);
+		if (cell != null && cell instanceof mxCell)
+		{
+			while (((mxCell)cell).getGeometry().isRelative()) {
+				cell = ((mxCell)cell).getParent();
+			}
+			Object value = ((mxCell) cell).getValue();
+
+			if (value instanceof Element)
+			{
+				Element elt = (Element) value;
+
+				String type = elt.getTagName();
+				int n = 1;
+				Object[] vertices = getChildVertices(getDefaultParent());
+				for (Object vertex : vertices) {
+					if (vertex == cell) {
+						return n;
+					}
+					
+					Object vVal = ((mxCell) vertex).getValue();
+
+					if (vVal instanceof Element)
+					{
+						Element vElt = (Element) vVal;
+						if (vElt.getTagName().equalsIgnoreCase(type)) {
+							n++;
+						}
+					}
+				}
+				
+			}
+		}
+		return 0;
 	}
 	
 

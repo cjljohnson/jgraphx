@@ -1,5 +1,9 @@
 package petri;
 
+import java.awt.event.ActionEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -8,13 +12,13 @@ import javax.swing.TransferHandler;
 
 import org.w3c.dom.Element;
 
+import com.mxgraph.examples.swing.editor.BasicGraphEditor;
 import com.mxgraph.examples.swing.editor.EditorActions.HistoryAction;
-import com.mxgraph.examples.swing.editor.EditorActions.OpenAction;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.util.mxGraphActions;
 import com.mxgraph.util.mxResources;
 
-public class RightClickMenu extends JPopupMenu
+public class PetriRightClick extends JPopupMenu
 {
 
 	/**
@@ -22,7 +26,7 @@ public class RightClickMenu extends JPopupMenu
 	 */
 	private static final long serialVersionUID = 4149390414490130748L;
 
-	public RightClickMenu(final HelloWorld hello, int x, int y)
+	public PetriRightClick(final HelloWorld hello, int x, int y)
 	{
 //		boolean selected = !hello.getGraphComponent().getGraph()
 //				.isSelectionEmpty();
@@ -51,9 +55,21 @@ public class RightClickMenu extends JPopupMenu
 	    
 	    addSeparator();
 	    
-	    add(hello.bind("Reach", PetriGraphActions.getCreateReachabilityAction(),
+//	    add(hello.bind("Reach", PetriGraphActions.getCreateReachabilityAction(),
+//	            "/petri/images/reach.gif"));
+	    
+	    add(hello.bind2("Reach", PetriGraphActions.getCreateReachabilityAction(),
 	            "/petri/images/reach.gif"));
 	    
+//	    add(new AbstractAction("Reach", null) {
+//			
+//			public void actionPerformed(ActionEvent arg0) {
+//				// TODO Auto-generated method stub
+//				System.out.println("YEE");
+//				System.out.println(arg0.getSource());
+//			}
+//		});
+//	    
 	    addSeparator();
 
 		add(hello.bind("undo", new HistoryAction(true),
@@ -63,7 +79,13 @@ public class RightClickMenu extends JPopupMenu
                         "/com/mxgraph/examples/swing/images/delete.gif"))
                 .setEnabled(true);
 		
-		add(hello.bind("Save As", new PetriGraphActions.SaveAction(true), "/com/mxgraph/examples/swing/images/save.gif"));
+		addSeparator();
+		
+		add(hello.bind("New", new PetriGraphActions.NewAction(), 
+				"/com/mxgraph/examples/swing/images/new.gif"));
+		
+		add(hello.bind("Save As", new PetriGraphActions.SaveAction(true), 
+				"/com/mxgraph/examples/swing/images/save.gif"));
 		
 		add(hello.bind("Open", new PetriGraphActions.OpenAction(),
 				"/com/mxgraph/examples/swing/images/open.gif"));

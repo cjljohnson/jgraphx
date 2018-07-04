@@ -20,6 +20,7 @@ import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import javax.swing.filechooser.FileFilter;
 
 import org.w3c.dom.Document;
@@ -191,7 +192,10 @@ public class PetriGraphActions {
          */
         public void actionPerformed(ActionEvent e)
         {
-            final PetriGraph graph = (PetriGraph) getGraph(e);
+        	System.out.println("YEE");
+//            final PetriGraph graph = (PetriGraph) getGraph(e);
+        	System.out.println(((JTabbedPane)e.getSource()).getComponentAt(0));
+        	final PetriGraph graph = (PetriGraph) ((mxGraphComponent)((JTabbedPane)e.getSource()).getComponentAt(0)).getGraph();
 
             if (graph != null)
             {
@@ -199,7 +203,9 @@ public class PetriGraphActions {
                 final ReachabilityGraph reach = new ReachabilityGraph(graph, 200);
                 long end = System.currentTimeMillis();
                 System.out.println(end - start);
-                JFrame frame2 = new JFrame("Reachability Graph");
+//                JFrame frame2 = new JFrame("Reachability Graph");
+//                frame2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                
                 
                 // define layout
                 mxIGraphLayout layout = new mxFastOrganicLayout(reach);
@@ -227,13 +233,14 @@ public class PetriGraphActions {
                         }
                     }
                 });
-                
-                
-                frame2.setContentPane(reachComponent);
-                
                 reachComponent.setConnectable(false);
-                frame2.setSize(400, 400);
-                frame2.setVisible(true);
+                
+                JTabbedPane pane = (JTabbedPane)e.getSource();
+                pane.addTab("Reach", null, reachComponent,
+                        "Reachability Graph");
+//                frame2.setContentPane(reachComponent);
+//                frame2.setSize(400, 400);
+//                frame2.setVisible(true);
             }
         }
     }
@@ -266,9 +273,41 @@ public class PetriGraphActions {
             if (graph != null)
             {
                 graph.fireTransition(cell);
+                graph.checkEnabledFromTransition(cell);
+                mxGraphComponent graphComponent = (mxGraphComponent)e.getSource();
+                graphComponent.refresh();
             }
         }
     }
+    
+	/**
+	 *
+	 */
+	@SuppressWarnings("serial")
+	public static class NewAction extends AbstractAction
+	{
+		/**
+		 * 
+		 */
+		public void actionPerformed(ActionEvent e)
+		{
+			mxGraphComponent graphComponent = (mxGraphComponent)e.getSource();
+				if (JOptionPane.showConfirmDialog(graphComponent,
+								mxResources.get("loseChanges")) == JOptionPane.YES_OPTION)
+				{
+					mxGraph graph = graphComponent.getGraph();
+
+					// Check modified flag and display save dialog
+					mxCell root = new mxCell();
+					root.insert(new mxCell());
+					graph.getModel().setRoot(root);
+
+//					editor.setModified(false);
+//					editor.setCurrentFile(null);
+					graphComponent.zoomAndCenter();
+				}
+			}
+	}
     
     /**
     *

@@ -1,6 +1,7 @@
 package petri;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -11,6 +12,7 @@ import javax.swing.JFrame;
 import org.w3c.dom.Element;
 
 import com.mxgraph.model.mxCell;
+import com.mxgraph.model.mxGraphModel;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxStylesheet;
@@ -94,7 +96,16 @@ public class ReachabilityGraph extends mxGraph{
 	                		queue.add(newState);
 	                	}
 	                	System.out.println(i + " " + j);
-	                	insertEdge(getDefaultParent(), null, "" + ((mxCell) vertex).getId(), node1, node, null);
+	                	Object[] edges = graph.getEdgesBetween(node1, node, true);
+	                	if (edges.length > 0) {
+	                		System.out.println(Arrays.toString(edges));
+	                		mxCell edge = (mxCell) edges[0];
+	                		String label = (String) edge.getValue();
+	                		label += "; t" + graph.getCellMarkingName(vertex);
+	                		edge.setValue(label);
+	                	} else {
+	                		insertEdge(getDefaultParent(), null, "t" + graph.getCellMarkingName(vertex), node1, node, null);
+	                	}
 	                	graph.setPlaceTokens(state);
 	                	j++;
 	                }
@@ -154,5 +165,31 @@ public class ReachabilityGraph extends mxGraph{
 	        }
 	    }
 	    
+	}
+	
+	@Override
+	public String convertValueToString(Object cell)
+	{
+		if (cell instanceof mxCell)
+		{
+			Object value = ((mxCell) cell).getValue();
+
+			if (value instanceof Map<?,?>)
+			{	
+				Map<String, Integer> map = (Map<String, Integer>)value;
+				StringBuilder sb = new StringBuilder();
+				for (String id : map.keySet()) {
+					Object vertex = ((mxGraphModel)graph.getModel()).getCell(id);
+					sb.append('p');
+					sb.append(graph.getCellMarkingName(vertex));
+					sb.append(": ");
+					sb.append(map.get(id));
+					sb.append('\n');
+				}
+				return sb.toString();
+			}
+		}
+
+		return super.convertValueToString(cell);
 	}
 }
