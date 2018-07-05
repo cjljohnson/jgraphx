@@ -408,6 +408,8 @@ public class HelloWorld extends JFrame
 	    edge.put(mxConstants.STYLE_STROKECOLOR, "#000000");
 	    edge.put(mxConstants.STYLE_STROKEWIDTH, 2);
 	    edge.put(mxConstants.STYLE_FONTCOLOR, "#000000");
+	    edge.put(mxConstants.STYLE_ROUNDED, true);
+	    edge.put(mxConstants.STYLE_EDGE, mxConstants.EDGESTYLE_ENTITY_RELATION);
 
 	    graph.getStylesheet().setDefaultEdgeStyle(edge);
 	}

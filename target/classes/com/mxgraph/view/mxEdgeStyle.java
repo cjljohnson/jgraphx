@@ -152,7 +152,7 @@ public class mxEdgeStyle
 				result.add(dep);
 
 				dx = (isTargetLeft) ? -seg : seg;
-				mxPoint arr = new mxPoint(xe + dx, ye);
+				mxPoint arr = new mxPoint(xe + dx, 1);
 
 				// Adds intermediate points if both go out on same side
 				if (isSourceLeft == isTargetLeft)
@@ -165,8 +165,8 @@ public class mxEdgeStyle
 				else if ((dep.getX() < arr.getX()) == isSourceLeft)
 				{
 					double midY = y0 + (ye - y0) / 2;
-					result.add(new mxPoint(dep.getX(), midY));
-					result.add(new mxPoint(arr.getX(), midY));
+					//result.add(new mxPoint(dep.getX(), midY));
+					//result.add(new mxPoint(arr.getX(), midY));
 				}
 
 				result.add(arr);
