@@ -5,11 +5,13 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.BoxLayout;
@@ -33,18 +35,82 @@ public class ReachabilityGraph extends mxGraph{
 	private int size;
 	private PetriGraph graph;
 	int i;
+	private Set<Object> liveSet;
+	private boolean isComplete;
+	private Map<String, Integer> boundedness;
 	
 	public ReachabilityGraph(PetriGraph graph, int size) {
 		nodeMap = new HashMap<Map<String, Integer>, mxCell>();
 		this.size = size;
 		this.graph = graph;
-		i = 0;
+		liveSet = new HashSet<Object>();
+		isComplete = false;
+		boundedness = new TreeMap<String, Integer>();
+		
+		
 		initStyles();
 		
 		setCellsEditable(false);
 		
+		
+		
 		calcReachability();
-		JFrame frame = new JFrame("Reachability");
+		
+		showLive();
+		showBounded();
+	}
+	
+	public void showLive() {
+		String message = "The following transitions are live:\n";
+		
+		for (Object vertex : liveSet) {
+			message += " t" + graph.getCellMarkingName(vertex);
+			
+		}
+		message += "\nThe following transitions are dead:\n";
+		
+		for (Object vertex : graph.getChildVertices(graph.getDefaultParent())) {
+			if (vertex instanceof mxCell) {
+				Object value = ((mxCell) vertex).getValue();
+				if (value instanceof Element) {
+					Element elt = (Element) value;
+	                if (elt.getTagName().equalsIgnoreCase("transition") 
+	                		&& !liveSet.contains(vertex)) {
+	                	message += " t" + graph.getCellMarkingName(vertex);
+	                }
+				}
+			}
+		}
+		
+		if (!isComplete) {
+			message += "\nNOTE: Reachability graph was terminated after " 
+					+ i + " markings were assessed. Some dead markings may be live.";
+		}
+	                		
+		
+		JOptionPane.showMessageDialog(null, message);
+	}
+	
+	public void showBounded() {
+		String message = "Boundedness for all places:\n";
+		for (Map<String, Integer> map : nodeMap.keySet()) {
+			for (String id : map.keySet()) {
+				int val = map.get(id);
+				boundedness.put(id, Math.max(boundedness.getOrDefault(id, 0), val));
+			}
+		}
+		
+		for (String id : boundedness.keySet()) {
+			message += " p" + 
+					graph.getCellMarkingName(((mxGraphModel)graph.getModel()).getCell(id)) 
+					+ ": " + boundedness.get(id) + "\n";
+		}
+		
+		if (!isComplete) {
+			message += "\nNOTE: Reachability graph was terminated after " 
+					+ i + " markings were assessed. Values given are only a lower bound.";
+		}
+		JOptionPane.showMessageDialog(null, message);
 	}
 	
 	public boolean isCellSelectable(Object cell)
@@ -83,6 +149,9 @@ public class ReachabilityGraph extends mxGraph{
 		} finally {
 			getModel().endUpdate();
 		}
+		if (queue.isEmpty()) {
+			isComplete = true;
+		}
 	}
 	
 	private void calcNodeReachability(Map<String, Integer> state, Queue<Map<String, Integer>> queue) {
@@ -105,7 +174,6 @@ public class ReachabilityGraph extends mxGraph{
 	                		nodeMap.put(newState, node);
 	                		queue.add(newState);
 	                	}
-	                	System.out.println(i + " " + j);
 	                	Object[] edges = graph.getEdgesBetween(node1, node, true);
 	                	if (edges.length > 0) {
 	                		System.out.println(Arrays.toString(edges));
@@ -116,8 +184,13 @@ public class ReachabilityGraph extends mxGraph{
 	                	} else {
 	                		insertEdge(getDefaultParent(), null, "t" + graph.getCellMarkingName(vertex), node1, node, null);
 	                	}
+	                	
+	                	
 	                	graph.setPlaceTokens(state);
 	                	j++;
+	                	
+	                	// Add to liveSet
+	                	liveSet.add(vertex);
 	                }
 				}
 			}
