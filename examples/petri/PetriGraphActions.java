@@ -1,6 +1,7 @@
 package petri;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -21,6 +22,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import org.w3c.dom.Document;
@@ -193,9 +195,9 @@ public class PetriGraphActions {
         public void actionPerformed(ActionEvent e)
         {
         	System.out.println("YEE");
-//            final PetriGraph graph = (PetriGraph) getGraph(e);
-        	System.out.println(((JTabbedPane)e.getSource()).getComponentAt(0));
-        	final PetriGraph graph = (PetriGraph) ((mxGraphComponent)((JTabbedPane)e.getSource()).getComponentAt(0)).getGraph();
+            final PetriGraph graph = (PetriGraph) getGraph(e);
+//        	System.out.println(((JTabbedPane)e.getSource()).getComponentAt(0));
+//        	final PetriGraph graph = (PetriGraph) ((mxGraphComponent)((JTabbedPane)e.getSource()).getComponentAt(0)).getGraph();
 
             if (graph != null)
             {
@@ -203,8 +205,8 @@ public class PetriGraphActions {
                 final ReachabilityGraph reach = new ReachabilityGraph(graph, 200);
                 long end = System.currentTimeMillis();
                 System.out.println(end - start);
-//                JFrame frame2 = new JFrame("Reachability Graph");
-//                frame2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                JFrame frame2 = new JFrame("Reachability Graph");
+                frame2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 
                 
                 // define layout
@@ -235,12 +237,47 @@ public class PetriGraphActions {
                 });
                 reachComponent.setConnectable(false);
                 
-                JTabbedPane pane = (JTabbedPane)e.getSource();
-                pane.addTab("Reach", null, reachComponent,
-                        "Reachability Graph");
-//                frame2.setContentPane(reachComponent);
-//                frame2.setSize(400, 400);
-//                frame2.setVisible(true);
+                
+                reachComponent.getGraphControl().addMouseListener(new MouseAdapter()
+                {
+
+                    /**
+                     * 
+                     */
+                    public void mousePressed(MouseEvent e)
+                    {
+                        // Handles context menu on the Mac where the trigger is on mousepressed
+                        mouseReleased(e);
+                    }
+
+                    /**
+                     * 
+                     */
+                    public void mouseReleased(MouseEvent e)
+                    {
+                        if (e.isPopupTrigger())
+                        {
+                         // Reach Right Click
+                            Point pt = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(),
+                                    reachComponent);
+                            ReachRightClick menu = new ReachRightClick(reachComponent, pt.x, pt.y);
+                            menu.show(reachComponent, pt.x, pt.y);
+
+                            e.consume();
+                        }
+                    }
+
+                });
+                
+                
+                
+//                JTabbedPane pane = (JTabbedPane)e.getSource();
+//                pane.addTab("Reach", null, reachComponent,
+//                        "Reachability Graph");
+                frame2.setContentPane(reachComponent);
+                frame2.pack();
+                //frame2.setSize(400, 400);
+                frame2.setVisible(true);
             }
         }
     }

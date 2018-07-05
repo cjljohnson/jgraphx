@@ -55,21 +55,12 @@ public class PetriRightClick extends JPopupMenu
 	    
 	    addSeparator();
 	    
-//	    add(hello.bind("Reach", PetriGraphActions.getCreateReachabilityAction(),
-//	            "/petri/images/reach.gif"));
-	    
-	    add(hello.bind2("Reach", PetriGraphActions.getCreateReachabilityAction(),
+	    add(hello.bind("Reach", PetriGraphActions.getCreateReachabilityAction(),
 	            "/petri/images/reach.gif"));
 	    
-//	    add(new AbstractAction("Reach", null) {
-//			
-//			public void actionPerformed(ActionEvent arg0) {
-//				// TODO Auto-generated method stub
-//				System.out.println("YEE");
-//				System.out.println(arg0.getSource());
-//			}
-//		});
-//	    
+//	    add(hello.bind2("Reach", PetriGraphActions.getCreateReachabilityAction(),
+//	            "/petri/images/reach.gif"));
+	    
 	    addSeparator();
 
 		add(hello.bind("undo", new HistoryAction(true),

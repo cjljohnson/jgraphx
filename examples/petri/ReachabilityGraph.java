@@ -1,13 +1,23 @@
 package petri;
 
+import java.awt.GridLayout;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.TreeMap;
 
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 import org.w3c.dom.Element;
 
@@ -191,5 +201,46 @@ public class ReachabilityGraph extends mxGraph{
 		}
 
 		return super.convertValueToString(cell);
+	}
+	
+	public void findNodes() {
+	    
+	    Map<String, Integer> key = (Map<String, Integer>) nodeMap.keySet().toArray()[0];
+	    
+	    JPanel panel = new JPanel();
+	    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+	    List<JTextField> values = new ArrayList<JTextField>();
+	    mxGraphModel model = (mxGraphModel) graph.getModel();
+	    panel.add(new JLabel("Define marking:"));
+	    for (String id : key.keySet()) {
+	        System.out.println(id);
+	        
+	        JTextField valField = new JTextField(5);
+	        JPanel panel2 = new JPanel();
+	        panel2.add(new JLabel("p" + graph.getCellMarkingName(model.getCell(id)) + ": "));
+	        panel2.add(valField);
+	        panel.add(panel2);
+	        values.add(valField);
+	        
+	    }
+	    int result = JOptionPane.showConfirmDialog(null, panel, "Find Marking",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+	    if (result == JOptionPane.OK_OPTION) {
+	        Map<String, Integer> goal = new TreeMap<String, Integer>();
+	        Iterator<JTextField> iter = values.iterator();
+	        for (String id : key.keySet()) {
+	            try {
+	                int n = Integer.parseInt(iter.next().getText());
+	                goal.put(id, n);
+	            } catch (Exception e) {
+                }
+	        }
+	        if (nodeMap.containsKey(goal)) {
+	            setSelectionCell(nodeMap.get(goal));
+	        } else {
+	            JOptionPane.showMessageDialog(null, "Marking not in reachability graph.");
+	        }
+	    }
+	    
 	}
 }
