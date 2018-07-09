@@ -41,8 +41,10 @@ import com.mxgraph.util.mxEvent;
 import com.mxgraph.util.mxEventObject;
 import com.mxgraph.util.mxResources;
 import com.mxgraph.util.mxEventSource.mxIEventListener;
+import com.mxgraph.view.mxCellState;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxMultiplicity;
+import com.mxgraph.view.mxStyleRegistry;
 import com.mxgraph.view.mxStylesheet;
 
 public class HelloWorld extends JFrame
@@ -74,6 +76,8 @@ public class HelloWorld extends JFrame
 	public HelloWorld()
 	{
 		super("Petri Netter");
+		
+		mxStyleRegistry.putValue("PETRI_STYLE", new PetriEdgeFunction());
 		
 		//Hardcode test elements
 		Document xmlDocument = mxDomUtils.createDocument();
@@ -228,8 +232,13 @@ public class HelloWorld extends JFrame
                 mxCell connectionCell = (mxCell) evt.getProperty("edge");
                 if (connectionCell.getSource() != null && connectionCell.getTarget() != null) {
                     graph.checkEnabledFromEdge(connectionCell);
+                    graph.refresh();
                 }
-                
+            }
+        });
+		
+		graph.addListener(mxEvent.CELLS_ADDED, new mxIEventListener() {
+            public void invoke(Object sender, mxEventObject evt) {
             }
         });
 		
@@ -410,6 +419,7 @@ public class HelloWorld extends JFrame
 	    edge.put(mxConstants.STYLE_FONTCOLOR, "#000000");
 	    edge.put(mxConstants.STYLE_ROUNDED, true);
 	    edge.put(mxConstants.STYLE_EDGE, mxConstants.EDGESTYLE_ENTITY_RELATION);
+	    edge.put(mxConstants.STYLE_EDGE, "PETRI_STYLE");
 
 	    graph.getStylesheet().setDefaultEdgeStyle(edge);
 	}

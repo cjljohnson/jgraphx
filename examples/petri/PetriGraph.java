@@ -1,6 +1,7 @@
 package petri;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -351,7 +352,9 @@ public class PetriGraph extends mxGraph{
 			value = arc;
 		}
 
-		return super.createEdge(parent, id, value, source, target, "");
+		Object result = super.createEdge(parent, id, value, source, target, "");
+		
+		return result;
 	}
 	
 	public void checkEnabledTransitions() {

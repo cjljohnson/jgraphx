@@ -165,8 +165,8 @@ public class mxEdgeStyle
 				else if ((dep.getX() < arr.getX()) == isSourceLeft)
 				{
 					double midY = y0 + (ye - y0) / 2;
-					//result.add(new mxPoint(dep.getX(), midY));
-					//result.add(new mxPoint(arr.getX(), midY));
+					result.add(new mxPoint(dep.getX(), midY));
+					result.add(new mxPoint(arr.getX(), midY));
 				}
 
 				result.add(arr);
