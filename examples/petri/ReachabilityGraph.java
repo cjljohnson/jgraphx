@@ -117,7 +117,7 @@ public class ReachabilityGraph extends mxGraph{
 	{
 	    if (getModel().isEdge(cell))
 	    {
-	        return false;
+	        //return false;
 	    }
 
 	    return super.isCellSelectable(cell);
@@ -176,10 +176,10 @@ public class ReachabilityGraph extends mxGraph{
 	                	}
 	                	Object[] edges = graph.getEdgesBetween(node1, node, true);
 	                	if (edges.length > 0) {
-	                		System.out.println(Arrays.toString(edges));
+	                		//System.out.println(Arrays.toString(edges));
 	                		mxCell edge = (mxCell) edges[0];
 	                		String label = (String) edge.getValue();
-	                		label += "; t" + graph.getCellMarkingName(vertex);
+	                		label += ", t" + graph.getCellMarkingName(vertex);
 	                		edge.setValue(label);
 	                	} else {
 	                		insertEdge(getDefaultParent(), null, "t" + graph.getCellMarkingName(vertex), node1, node, null);
@@ -228,6 +228,7 @@ public class ReachabilityGraph extends mxGraph{
 	    edge.put(mxConstants.STYLE_STROKECOLOR, "#000000");
 	    edge.put(mxConstants.STYLE_STROKEWIDTH, 2);
 	    edge.put(mxConstants.STYLE_FONTCOLOR, "#000000");
+	    edge.put(mxConstants.STYLE_EDGE, "PETRI_STYLE");
 		getStylesheet().setDefaultEdgeStyle(edge);
 	}
 	

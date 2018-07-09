@@ -28,6 +28,7 @@ public class PetriEdgeFunction implements mxEdgeStyleFunction{
         
         if (!isBidirectional)
             return;
+        System.out.println("YEE");
         
 //        mxPoint p0 = state.getAbsolutePoint(0);
 //        mxPoint pe = state.getAbsolutePoint(state.getAbsolutePointCount() - 1);
@@ -41,7 +42,7 @@ public class PetriEdgeFunction implements mxEdgeStyleFunction{
         
         double newX = midX + 20 * Math.sin(polar);
         double newY = midY + 20 * Math.cos(polar);
-        
+        System.out.println(new mxPoint(newX, newY));
         result.add(new mxPoint(newX, newY));
     }
     

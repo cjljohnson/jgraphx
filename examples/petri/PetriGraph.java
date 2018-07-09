@@ -123,7 +123,7 @@ public class PetriGraph extends mxGraph{
 				}
 				else if (elt.getTagName().equalsIgnoreCase("arc"))
 				{
-					return elt.getAttribute("weight");
+					return elt.getAttribute("weight").equals("1") ? "" : elt.getAttribute("weight");
 				}
 				else if (elt.getTagName().equalsIgnoreCase("transition"))
 				{

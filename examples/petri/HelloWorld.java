@@ -1,6 +1,7 @@
 package petri;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -15,7 +16,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -223,7 +226,17 @@ public class HelloWorld extends JFrame
 		initialiseGraphComponent(graphComponent);
 		
 		tabbedPane = new JTabbedPane();
-		tabbedPane.addTab("Petri", null, graphComponent,
+		JPanel panel1 = new JPanel();
+		panel1.add(new JLabel("YEE"));
+		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+				graphComponent, null);
+		splitPane.setOneTouchExpandable(true);
+		splitPane.setDividerLocation(150);
+		//Provide minimum sizes for the two components in the split pane
+		Dimension minimumSize = new Dimension(100, 50);
+		graphComponent.setMinimumSize(minimumSize);
+		
+		tabbedPane.addTab("Petri", null, splitPane,
                 "Petri Graph");
 		getContentPane().add(tabbedPane);
 		
@@ -418,7 +431,6 @@ public class HelloWorld extends JFrame
 	    edge.put(mxConstants.STYLE_STROKEWIDTH, 2);
 	    edge.put(mxConstants.STYLE_FONTCOLOR, "#000000");
 	    edge.put(mxConstants.STYLE_ROUNDED, true);
-	    edge.put(mxConstants.STYLE_EDGE, mxConstants.EDGESTYLE_ENTITY_RELATION);
 	    edge.put(mxConstants.STYLE_EDGE, "PETRI_STYLE");
 
 	    graph.getStylesheet().setDefaultEdgeStyle(edge);

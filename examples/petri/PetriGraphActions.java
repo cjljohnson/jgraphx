@@ -21,6 +21,7 @@ import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
@@ -194,8 +195,9 @@ public class PetriGraphActions {
          */
         public void actionPerformed(ActionEvent e)
         {
-        	System.out.println("YEE");
-            final PetriGraph graph = (PetriGraph) getGraph(e);
+            //final PetriGraph graph = (PetriGraph) getGraph(e);
+            JSplitPane pane = (JSplitPane)((JTabbedPane)e.getSource()).getComponentAt(0);
+            final PetriGraph graph = (PetriGraph) ((mxGraphComponent)pane.getComponent(0)).getGraph();
 //        	System.out.println(((JTabbedPane)e.getSource()).getComponentAt(0));
 //        	final PetriGraph graph = (PetriGraph) ((mxGraphComponent)((JTabbedPane)e.getSource()).getComponentAt(0)).getGraph();
 
@@ -205,8 +207,8 @@ public class PetriGraphActions {
                 final ReachabilityGraph reach = new ReachabilityGraph(graph, 200);
                 long end = System.currentTimeMillis();
                 System.out.println(end - start);
-                JFrame frame2 = new JFrame("Reachability Graph");
-                frame2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                //JFrame frame2 = new JFrame("Reachability Graph");
+                //frame2.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 
                 
                 // define layout
@@ -274,10 +276,11 @@ public class PetriGraphActions {
 //                JTabbedPane pane = (JTabbedPane)e.getSource();
 //                pane.addTab("Reach", null, reachComponent,
 //                        "Reachability Graph");
-                frame2.setContentPane(reachComponent);
-                frame2.pack();
+                //frame2.setContentPane(reachComponent);
+                //frame2.pack();
                 //frame2.setSize(400, 400);
-                frame2.setVisible(true);
+                //frame2.setVisible(true);
+                pane.setRightComponent(reachComponent);
             }
         }
     }
